@@ -9,5 +9,7 @@ func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	router.Use(middleware.CORSMiddleware())
 
+	SetupCustomerRoutes(router)
+
 	return router
 }

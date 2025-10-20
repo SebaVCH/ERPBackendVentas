@@ -33,7 +33,7 @@ func StartDB() error {
 	if err := DB.AutoMigrate(
 		&domain.Cliente{},
 		&domain.Producto{},
-		&domain.Ventas{},
+		&domain.Venta{},
 		&domain.DetalleVenta{},
 		&domain.Empleado{},
 	); err != nil {

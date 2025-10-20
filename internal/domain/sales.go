@@ -2,7 +2,7 @@ package domain
 
 import "time"
 
-type Ventas struct {
+type Venta struct {
 	IDVenta           int            `gorm:"column:id_venta;primaryKey;autoIncrement" json:"id_venta"`
 	IDCliente         int            `gorm:"column:id_cliente;not null" json:"id_cliente"`
 	IDEmpleado        int            `gorm:"column:id_empleado;not null" json:"id_empleado"`
@@ -16,6 +16,6 @@ type Ventas struct {
 	CondicionesDePago string         `gorm:"column:condiciones_de_pago;type:varchar(100);not null" json:"condiciones_de_pago"`
 }
 
-func (Ventas) TableName() string {
+func (Venta) TableName() string {
 	return "ventas.ventas"
 }

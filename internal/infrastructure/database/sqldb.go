@@ -25,15 +25,14 @@ func StartDB() error {
 	)
 
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		return err
 	}
 
 	if err := DB.AutoMigrate(
-		&domain.Empleado{},
-		&domain.Producto{},
-		&domain.Cliente{},
 		&domain.Venta{},
 		&domain.DetalleVenta{},
 	); err != nil {

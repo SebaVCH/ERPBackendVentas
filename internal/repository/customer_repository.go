@@ -4,6 +4,7 @@ import (
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
 	"github.com/SebaVCH/ERPBackendVentas/internal/infrastructure/database"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type CustomerRepository interface {
@@ -22,7 +23,7 @@ func NewCustomerRepository() CustomerRepository {
 
 func (cu customerRepository) GetCustomers() ([]domain.Cliente, error) {
 	var customers []domain.Cliente
-	err := cu.db.Find(&customers).Error
+	err := cu.db.Find(&customers).Preload(clause.Associations).Error
 	if err != nil {
 		return nil, err
 	}

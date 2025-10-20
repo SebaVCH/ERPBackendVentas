@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterSaleRoutes(rg *gin.RouterGroup) {
+func SetupSaleRoutes(rg *gin.Engine) {
 
 	repo := repository.NewSaleRepository()
 	uc := usecase.NewSaleUsecase(repo)
@@ -15,8 +15,8 @@ func RegisterSaleRoutes(rg *gin.RouterGroup) {
 
 	sales := rg.Group("/sales")
 	{
-		sales.POST("", handler.CreateSale)    // POST /api/sales
-		sales.GET("", handler.GetSales)       // GET  /api/sales
-		sales.GET("/:id", handler.GetSale)    // GET  /api/sales/:id
+		sales.POST("", handler.CreateSale) // POST /api/sales
+		sales.GET("", handler.GetSales)    // GET  /api/sales
+		sales.GET("/:id", handler.GetSale) // GET  /api/sales/:id
 	}
 }

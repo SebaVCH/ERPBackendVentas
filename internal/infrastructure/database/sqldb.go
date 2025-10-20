@@ -31,11 +31,11 @@ func StartDB() error {
 	}
 
 	if err := DB.AutoMigrate(
-		&domain.Cliente{},
+		&domain.Empleado{},
 		&domain.Producto{},
+		&domain.Cliente{},
 		&domain.Venta{},
 		&domain.DetalleVenta{},
-		&domain.Empleado{},
 	); err != nil {
 		return err
 	}

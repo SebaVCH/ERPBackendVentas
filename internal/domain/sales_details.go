@@ -6,7 +6,6 @@ type DetalleVenta struct {
 	Producto   Producto `gorm:"foreignKey:IDProducto;references:IDProducto" json:"producto"`
 	Cantidad   int      `gorm:"column:cantidad;not null" json:"cantidad"`
 	PrecioUnit float64  `gorm:"column:precio_unitario;type:float;not null" json:"precio_unit"`
-	Venta     Venta   `gorm:"foreignKey:IDVenta;references:IDVenta" json:"ventas"`
 }
 
 func (DetalleVenta) TableName() string {

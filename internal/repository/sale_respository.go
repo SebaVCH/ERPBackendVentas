@@ -23,8 +23,8 @@ func NewSaleRepository() SaleRepository {
 	}
 }
 
-func (r *saleRepository) DB() *gorm.DB { 
-	return r.db 
+func (r *saleRepository) DB() *gorm.DB {
+	return r.db
 }
 
 func (r *saleRepository) GetSales() ([]domain.Venta, error) {
@@ -55,31 +55,20 @@ func (r *saleRepository) GetSale(id int) (*domain.Venta, error) {
 
 func (r *saleRepository) CreateSale(sale *domain.Venta) error {
 	tx := r.db.Begin()
-	
+
 	if tx.Error != nil {
 		return tx.Error
 	}
 
-	if err := tx.Create(sale).Error; err != nil {
+	if err := tx.Omit("DetallesVenta.Venta").Create(sale).Error; err != nil {
 		tx.Rollback()
 		return err
-	}
-
-	for i := range sale.DetallesVenta {
-		sale.DetallesVenta[i].IDVenta = sale.IDVenta
-	}
-
-	if len(sale.DetallesVenta) > 0 {
-		if err := tx.Create(&sale.DetallesVenta).Error; err != nil {
-			tx.Rollback()
-			return err
-		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return err
 	}
-	
+
 	return nil
 }

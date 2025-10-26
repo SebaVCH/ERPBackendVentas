@@ -2,7 +2,6 @@
 # Formate de la peticion POST de sale
     {
         "id_cliente": 5,
-        "id_empleado": 2,
         "fecha_pedido": "2025-10-20T12:00:00Z",
         "forma_de_pago": "Tarjeta",
         "condiciones_de_pago": "Contado",

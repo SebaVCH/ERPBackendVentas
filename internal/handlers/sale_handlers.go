@@ -19,7 +19,6 @@ type DetalleReq struct {
 
 type CreateSaleReq struct {
 	IDCliente         int          `json:"id_cliente" binding:"required"`
-	IDEmpleado        int          `json:"id_empleado" binding:"required"`
 	FechaPedido       *time.Time   `json:"fecha_pedido"`
 	FormaDePago       string       `json:"forma_de_pago" binding:"required"`
 	CondicionesDePago string       `json:"condiciones_de_pago" binding:"required"`
@@ -57,7 +56,6 @@ func (h *SaleHandler) CreateSale(c *gin.Context) {
 
 	venta := &domain.Venta{
 		IDCliente:         req.IDCliente,
-		IDEmpleado:        req.IDEmpleado,
 		FechaPedido:       fecha,
 		Estado:            ptrBool(true),
 		FormaDePago:       req.FormaDePago,

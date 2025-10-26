@@ -9,5 +9,5 @@ type DetalleVenta struct {
 }
 
 func (DetalleVenta) TableName() string {
-	return "ventas.detalle_venta"
+	return "Ventas.detalle_venta"
 }

@@ -30,9 +30,9 @@ func (r *saleRepository) DB() *gorm.DB {
 func (r *saleRepository) GetSales() ([]domain.Venta, error) {
 	var ventas []domain.Venta
 	err := r.db.
-		Preload("Empleado").
 		Preload("Cliente").
 		Preload("DetallesVenta").
+		//Preload("DetallesVenta.Producto").
 		Find(&ventas).Error
 	if err != nil {
 		return nil, err
@@ -43,9 +43,9 @@ func (r *saleRepository) GetSales() ([]domain.Venta, error) {
 func (r *saleRepository) GetSale(id int) (*domain.Venta, error) {
 	var venta domain.Venta
 	err := r.db.
-		Preload("Empleado").
 		Preload("Cliente").
 		Preload("DetallesVenta").
+		//Preload("DetallesVenta.Producto").
 		First(&venta, "id_venta = ?", id).Error
 	if err != nil {
 		return nil, err

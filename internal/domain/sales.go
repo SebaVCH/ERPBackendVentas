@@ -5,8 +5,6 @@ import "time"
 type Venta struct {
 	IDVenta           int            `gorm:"column:id_venta;primaryKey;autoIncrement" json:"id_venta"`
 	IDCliente         int            `gorm:"column:id_cliente;not null" json:"id_cliente"`
-	IDEmpleado        int            `gorm:"column:id_empleado;not null" json:"id_empleado"`
-	Empleado          Empleado       `gorm:"foreignKey:IDEmpleado;references:IDEmpleado" json:"empleado"`
 	DetallesVenta     []DetalleVenta `gorm:"foreignKey:IDVenta;references:IDVenta" json:"detalles_venta"`
 	Cliente           Cliente        `gorm:"foreignKey:IDCliente;references:IDCliente" json:"cliente"`
 	FechaPedido       time.Time      `gorm:"column:fecha_pedido;type:timestamp;not null" json:"fecha_pedido"`
@@ -17,5 +15,5 @@ type Venta struct {
 }
 
 func (Venta) TableName() string {
-	return "ventas.ventas"
+	return "Ventas.ventas"
 }

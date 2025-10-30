@@ -9,8 +9,8 @@ import (
 type SaleRepository interface {
 	GetSales() ([]domain.Venta, error)
 	GetSale(id int) (*domain.Venta, error)
-	CreateSale(sale *domain.Venta) error
-	DB() *gorm.DB
+	CreateSale(sale *domain.Venta) (*domain.Venta, error)
+	GetProductQuantity(pID int) int
 }
 
 type saleRepository struct {
@@ -21,10 +21,6 @@ func NewSaleRepository() SaleRepository {
 	return &saleRepository{
 		db: database.DB,
 	}
-}
-
-func (r *saleRepository) DB() *gorm.DB {
-	return r.db
 }
 
 func (r *saleRepository) GetSales() ([]domain.Venta, error) {
@@ -53,22 +49,45 @@ func (r *saleRepository) GetSale(id int) (*domain.Venta, error) {
 	return &venta, nil
 }
 
-func (r *saleRepository) CreateSale(sale *domain.Venta) error {
+func (r *saleRepository) CreateSale(sale *domain.Venta) (*domain.Venta, error) {
 	tx := r.db.Begin()
 
 	if tx.Error != nil {
-		return tx.Error
+		return nil, tx.Error
 	}
 
 	if err := tx.Omit("DetallesVenta.Venta").Create(sale).Error; err != nil {
 		tx.Rollback()
-		return err
+		return nil, err
+	}
+	
+	for _, d := range sale.DetallesVenta {
+		if err := tx.Model(&domain.Producto{}).
+			Where("id_producto = ?", d.IDProducto).
+			UpdateColumn("cantidad", gorm.Expr("cantidad - ?", d.Cantidad)).Error; err != nil {
+			tx.Rollback()
+			return nil, err
+		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 
-	return nil
+	created, err := r.GetSale(sale.IDVenta)
+	if err != nil {
+		return nil, err
+	}
+
+	return created, nil
+}
+
+func (r *saleRepository) GetProductQuantity(pID int) int {
+	var producto domain.Producto
+	err := r.db.First(&producto, "id_producto = ?", pID).Error
+	if err != nil {
+		return 0
+	}
+	return producto.Cantidad
 }

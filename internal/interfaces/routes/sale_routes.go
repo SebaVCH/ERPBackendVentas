@@ -1,22 +1,19 @@
 package routes
 
 import (
-	"github.com/SebaVCH/ERPBackendVentas/internal/handlers"
+	"github.com/SebaVCH/ERPBackendVentas/internal/interfaces/controller"
 	"github.com/SebaVCH/ERPBackendVentas/internal/repository"
 	"github.com/SebaVCH/ERPBackendVentas/internal/usecase"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupSaleRoutes(rg *gin.Engine) {
+	saleRepo := repository.NewSaleRepository()
+	saleUseCase := usecase.NewSaleUseCase(saleRepo)
+	saleController := controller.NewSaleController(saleUseCase)
 
-	repo := repository.NewSaleRepository()
-	uc := usecase.NewSaleUsecase(repo)
-	handler := handlers.NewSaleHandler(uc)
+	rg.POST("/sales", saleController.CreateSale) // POST /api/sales
+	rg.GET("/sales", saleController.GetSales)    // GET  /api/sales
+	rg.GET("/sales/:id", saleController.GetSale) // GET  /api/sales/:id
 
-	sales := rg.Group("/sales")
-	{
-		sales.POST("", handler.CreateSale) // POST /api/sales
-		sales.GET("", handler.GetSales)    // GET  /api/sales
-		sales.GET("/:id", handler.GetSale) // GET  /api/sales/:id
-	}
 }

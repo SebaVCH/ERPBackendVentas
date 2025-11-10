@@ -20,6 +20,8 @@ type CreateSaleReq struct {
 	IDCliente         int          `json:"id_cliente" binding:"required"`
 	FechaPedido       *time.Time   `json:"fecha_pedido"`
 	FormaDePago       string       `json:"forma_de_pago" binding:"required"`
+	Estado			string       `json:"estado" binding:"required"`
+	DireccionEnvio    string       `json:"direccion_envio" binding:"required"`
 	CondicionesDePago string       `json:"condiciones_de_pago" binding:"required"`
 	DetallesVenta     []DetalleReq `json:"detalles_venta" binding:"required,dive"`
 }
@@ -90,7 +92,8 @@ func (su *saleUsecase) CreateSale(c *gin.Context) {
 		IDCliente:         req.IDCliente,
 		FechaPedido:       fecha,
 		Total:             total,
-		Estado:            ptrBool(true),
+		Estado:            req.Estado,
+		DireccionEnvio:    req.DireccionEnvio,
 		FormaDePago:       req.FormaDePago,
 		CondicionesDePago: req.CondicionesDePago,
 		DetallesVenta:     detalles,

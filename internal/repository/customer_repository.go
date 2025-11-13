@@ -9,6 +9,7 @@ import (
 
 type CustomerRepository interface {
 	GetCustomers() ([]domain.Cliente, error)
+	GetCustomerTx(id int) (bool, error)
 }
 
 type customerRepository struct {
@@ -28,4 +29,14 @@ func (cu customerRepository) GetCustomers() ([]domain.Cliente, error) {
 		return nil, err
 	}
 	return customers, nil
+}
+
+// Funcion para obtener un cliente dentro de una transaccion en el paquete repository
+func (cu *customerRepository) GetCustomerTx(id int) (bool, error) {
+	var customer domain.Cliente
+	err := cu.db.First(&customer, "id_cliente = ?", id).Preload(clause.Associations).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

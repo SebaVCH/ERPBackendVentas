@@ -9,7 +9,8 @@ import (
 
 func SetupSaleRoutes(rg *gin.Engine) {
 	saleRepo := repository.NewSaleRepository()
-	saleUseCase := usecase.NewSaleUseCase(saleRepo)
+	cartRepo := repository.NewCartRepository()
+	saleUseCase := usecase.NewSaleUseCase(saleRepo, cartRepo)
 	saleController := controller.NewSaleController(saleUseCase)
 
 	rg.POST("/sales", saleController.CreateSale) // POST /api/sales

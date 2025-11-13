@@ -1,12 +1,27 @@
 # ERPBackendVentas
 # Formate de la peticion POST de sale
-    {
-        "id_cliente": 5,
-        "fecha_pedido": "2025-10-20T12:00:00Z",
-        "forma_de_pago": "Tarjeta",
-        "condiciones_de_pago": "Contado",
-        "detalles_venta": [
-            { "id_producto": 10, "cantidad": 2, "precio_unitario": 15.5 },
-            { "id_producto": 3,  "cantidad": 1, "precio_unitario": 100.0 }
-        ]
-    }
+{
+    "id_cliente": 2,
+    "direccion_envio": "Av. Siempre Viva 742",
+    "forma_de_pago": "Tarjeta",
+    "condiciones_de_pago": "Pago completo"
+}
+
+## CARRITO FUNCIONES
+# agregar producto 
+
+{
+    "id_cliente": 2,
+    "id_producto": 3,
+    "cantidad": 5,
+    "precio_unitario": 28.000
+}
+
+# eliminar producto
+
+{
+    "id_cliente": 2,
+    "id_producto": 5,
+    "cantidad": 33,
+    "precio_unitario": 30.000
+}

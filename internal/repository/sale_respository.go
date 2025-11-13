@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
 	"github.com/SebaVCH/ERPBackendVentas/internal/infrastructure/database"
 	"gorm.io/gorm"
@@ -9,7 +12,7 @@ import (
 type SaleRepository interface {
 	GetSales() ([]domain.Venta, error)
 	GetSale(id int) (*domain.Venta, error)
-	CreateSale(sale *domain.Venta) (*domain.Venta, error)
+	CreateSale(venta *domain.Venta, detalles []domain.DetalleVenta) error
 	GetProductQuantity(pID int) int
 }
 
@@ -23,12 +26,76 @@ func NewSaleRepository() SaleRepository {
 	}
 }
 
+func (r *saleRepository) CreateSale(venta *domain.Venta, detalles []domain.DetalleVenta) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+
+		// Aca se formaliza la venta
+		if err := tx.Create(venta).Error; err != nil {
+			return err
+		}
+
+		// Antes de pasar a formalizar los detalle de venta, se debe corroborar que el id se obtiene correctamente
+		if venta.IDVenta == 0 {
+			return errors.New("no se pudo obtener el ID de la venta creada")
+		}
+
+		// Ahora se crean los detalles de la venta
+		for i := range detalles {
+
+			detalles[i].IDVenta = venta.IDVenta
+
+			var product domain.Producto
+
+			// Se obtiene el producto de dicha id
+			if err := tx.Where("id_producto = ?", detalles[i].IDProducto).First(&product).Error; err != nil {
+				return err
+			}
+
+			// Aca verifico que haya stock suficiente
+			if product.Cantidad < detalles[i].Cantidad {
+				return errors.New("no hay suficiente stock para realizar la venta")
+			}
+
+			// Se crea el detalle de la venta
+			if err := tx.Create(&detalles[i]).Error; err != nil {
+				return err
+			}
+
+			// aca realizo la el descuento del producto
+			result := tx.Model(&domain.Producto{}).
+				Where("id_producto = ? AND cantidad >= ?", detalles[i].IDProducto, detalles[i].Cantidad).
+				UpdateColumn("cantidad", gorm.Expr("cantidad - ?", detalles[i].Cantidad))
+			if result.Error != nil {
+				return result.Error
+			}
+			if result.RowsAffected == 0 {
+				return errors.New("stock insuficiente para producto id " + fmt.Sprint(detalles[i].IDProducto))
+			}
+		}
+
+		// Como ya se realizo la venta correctamente, el carrito queda como inactivo
+		if err := tx.Model(&domain.Carrito{}).
+			Where("id_cart = ?", venta.IDCarrito).
+			Update("estado", true).Error; err != nil {
+			return err
+		}
+
+		cartRepo := &cartRepository{db: tx}
+		if _, err := cartRepo.CreateCartTx(tx, venta.IDCliente); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (r *saleRepository) GetSales() ([]domain.Venta, error) {
 	var ventas []domain.Venta
 	err := r.db.
 		Preload("Cliente").
+		Preload("Carrito").
+		Preload("Carrito.Cliente").
 		Preload("DetallesVenta").
-		//Preload("DetallesVenta.Producto").
+		Preload("DetallesVenta.Producto").
 		Find(&ventas).Error
 	if err != nil {
 		return nil, err
@@ -40,47 +107,15 @@ func (r *saleRepository) GetSale(id int) (*domain.Venta, error) {
 	var venta domain.Venta
 	err := r.db.
 		Preload("Cliente").
+		Preload("Carrito").
+		Preload("Carrito.Cliente").
 		Preload("DetallesVenta").
-		//Preload("DetallesVenta.Producto").
+		Preload("DetallesVenta.Producto").
 		First(&venta, "id_venta = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
 	return &venta, nil
-}
-
-func (r *saleRepository) CreateSale(sale *domain.Venta) (*domain.Venta, error) {
-	tx := r.db.Begin()
-
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	if err := tx.Omit("DetallesVenta.Venta").Create(sale).Error; err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	
-	for _, d := range sale.DetallesVenta {
-		if err := tx.Model(&domain.Producto{}).
-			Where("id_producto = ?", d.IDProducto).
-			UpdateColumn("cantidad", gorm.Expr("cantidad - ?", d.Cantidad)).Error; err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	created, err := r.GetSale(sale.IDVenta)
-	if err != nil {
-		return nil, err
-	}
-
-	return created, nil
 }
 
 func (r *saleRepository) GetProductQuantity(pID int) int {

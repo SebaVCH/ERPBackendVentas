@@ -10,20 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type DetalleReq struct {
-	IDProducto     int     `json:"id_producto" binding:"required"`
-	Cantidad       int     `json:"cantidad" binding:"required"`
-	PrecioUnitario float64 `json:"precio_unitario" binding:"required"`
-}
-
-type CreateSaleReq struct {
-	IDCliente         int          `json:"id_cliente" binding:"required"`
-	FechaPedido       *time.Time   `json:"fecha_pedido"`
-	FormaDePago       string       `json:"forma_de_pago" binding:"required"`
-	CondicionesDePago string       `json:"condiciones_de_pago" binding:"required"`
-	DetallesVenta     []DetalleReq `json:"detalles_venta" binding:"required,dive"`
-}
-
 type SaleUsecase interface {
 	CreateSale(c *gin.Context)
 	GetSales(c *gin.Context)
@@ -32,77 +18,107 @@ type SaleUsecase interface {
 
 type saleUsecase struct {
 	SaleRepo repository.SaleRepository
+	CartRepo repository.CartRepository
 }
 
-func NewSaleUseCase(saleRepo repository.SaleRepository) SaleUsecase {
+func NewSaleUseCase(saleRepo repository.SaleRepository, cartRepo repository.CartRepository) SaleUsecase {
 	return &saleUsecase{
 		SaleRepo: saleRepo,
+		CartRepo: cartRepo,
 	}
 }
 
-func (su *saleUsecase) CreateSale(c *gin.Context) {
-	var req CreateSaleReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+type CreateSaleRequest struct {
+	IDCliente         int    `json:"id_cliente" `
+	DireccionEnvio    string `json:"direccion_envio" `
+	FormaDePago       string `json:"forma_de_pago" `
+	CondicionesDePago string `json:"condiciones_de_pago" `
+}
 
-	if len(req.DetallesVenta) == 0 {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "debe incluir al menos un detalle de venta"})
-		return
-	}
+func (u *saleUsecase) CreateSale(ctx *gin.Context) {
 
-	for _, d := range req.DetallesVenta {
-		if d.Cantidad <= 0 {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "cantidad debe ser mayor a 0"})
-			return
-		}
-		if d.PrecioUnitario <= 0 {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "precio unitario debe ser mayor a 0"})
-			return
-		}
-	}
-
-	fecha := time.Now()
-	if req.FechaPedido != nil {
-		fecha = *req.FechaPedido
-	}
-
-	detalles := make([]domain.DetalleVenta, 0, len(req.DetallesVenta))
-
-	var total float64
-	for _, d := range req.DetallesVenta {
-
-		if d.Cantidad >= su.SaleRepo.GetProductQuantity(d.IDProducto) {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "cantidad solicitada supera el stock disponible"})
-			return
-		}
-
-		detalles = append(detalles, domain.DetalleVenta{
-			IDProducto: d.IDProducto,
-			Cantidad:   d.Cantidad,
-			PrecioUnit: d.PrecioUnitario,
+	var req CreateSaleRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "request invalido",
+			Error:   err.Error(),
 		})
-		total += float64(d.Cantidad) * d.PrecioUnitario
+		return
 	}
 
-	venta := &domain.Venta{
+	if req.IDCliente <= 0 {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "id_cliente debe ser mayor a 0",
+		})
+		return
+	}
+
+	cart, items, err := u.CartRepo.GetCartItems(req.IDCliente)
+	if err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "error al obtener carrito y items",
+			Error:   err.Error(),
+		})
+		return
+	}
+	if cart == nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "carrito activo del cliente no encontrado",
+		})
+		return
+	}
+
+	// Construir detalles desde los items del carrito y calcular total
+	var detalles []domain.DetalleVenta
+	var total float64
+	for _, it := range items {
+		detalles = append(detalles, domain.DetalleVenta{
+			IDProducto: it.IDProducto,
+			Cantidad:   it.Cantidad,
+			PrecioUnit: it.PrecioUnit,
+		})
+		total += float64(it.Cantidad) * it.PrecioUnit
+	}
+
+	venta := domain.Venta{
 		IDCliente:         req.IDCliente,
-		FechaPedido:       fecha,
+		IDCarrito:         cart.IDCart,
+		FechaPedido:       time.Now(),
+		DireccionEnvio:    req.DireccionEnvio,
 		Total:             total,
-		Estado:            ptrBool(true),
+		Estado:            "PAGADO",
 		FormaDePago:       req.FormaDePago,
 		CondicionesDePago: req.CondicionesDePago,
-		DetallesVenta:     detalles,
 	}
 
-	created, err := su.SaleRepo.CreateSale(venta)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := u.SaleRepo.CreateSale(&venta, detalles); err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "error al crear la venta",
+			Error:   err.Error(),
+		})
 		return
 	}
 
-	c.IndentedJSON(http.StatusCreated, created)
+	fullSale, err := u.SaleRepo.GetSale(venta.IDVenta)
+	if err != nil {
+		respondJSON(ctx, http.StatusCreated, APIResponse{
+			Success: true,
+			Message: "venta creada, no se pudieron cargar relaciones",
+			Data:    venta,
+		})
+		return
+	}
+
+	respondJSON(ctx, http.StatusCreated, APIResponse{
+		Success: true,
+		Message: "venta creada exitosamente",
+		Data:    fullSale,
+	})
 }
 
 func (su *saleUsecase) GetSales(c *gin.Context) {
@@ -128,8 +144,4 @@ func (su *saleUsecase) GetSale(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, sale)
-}
-
-func ptrBool(b bool) *bool {
-	return &b
 }

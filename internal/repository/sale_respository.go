@@ -34,6 +34,20 @@ func (r *saleRepository) CreateSale(venta *domain.Venta, detalles []domain.Detal
 			return err
 		}
 
+		// se verifica que el cliente exista
+		var client domain.Cliente
+		if err := tx.Where("id_cliente = ?", venta.IDCliente).
+			First(&client).Error; err != nil {
+			return err
+		}
+
+		var direccion domain.Direccion
+		// se verifica que la direccion exista y sea de ese cliente
+		if err := tx.Where("id_direccion = ? AND id_cliente = ?", venta.IDDireccion, venta.IDCliente).
+			First(&direccion).Error; err != nil {
+			return err
+		}
+
 		// Antes de pasar a formalizar los detalle de venta, se debe corroborar que el id se obtiene correctamente
 		if venta.IDVenta == 0 {
 			return errors.New("no se pudo obtener el ID de la venta creada")
@@ -93,6 +107,7 @@ func (r *saleRepository) GetSales() ([]domain.Venta, error) {
 	err := r.db.
 		Preload("Cliente").
 		Preload("Carrito").
+		Preload("Direccion").
 		Find(&ventas).Error
 	if err != nil {
 		return nil, err
@@ -105,6 +120,7 @@ func (r *saleRepository) GetSale(id int) (*domain.Venta, error) {
 	err := r.db.
 		Preload("Cliente").
 		Preload("Carrito").
+		Preload("Direccion").
 		First(&venta, "id_venta = ?", id).Error
 	if err != nil {
 		return nil, err

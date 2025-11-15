@@ -40,6 +40,7 @@ func StartDB() error {
 		&domain.DetalleVenta{},
 		&domain.Carrito{},
 		&domain.CarritoProducto{},
+		&domain.Direccion{},
 	); err != nil {
 		return err
 	}

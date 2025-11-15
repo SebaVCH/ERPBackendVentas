@@ -25,3 +25,25 @@
     "cantidad": 33,
     "precio_unitario": 30.000
 }
+
+# Importante resaltar que las llamadas se manejan de la siguiente forma
+
+type APIResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message,omitempty"`
+	Error   string      `json:"error,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+# Crear direccion
+
+{
+    "id_cliente": 1,
+    "direccion": "Armindo Gallardo Donoso 1636",
+    "numero": 1636,
+    "ciudad": "Coquimbo",
+    "region": "Coquimbo",
+    "comuna": "El bosque",
+    "codigo_postal": "1700000",
+    "etiqueta": "Casa"
+}

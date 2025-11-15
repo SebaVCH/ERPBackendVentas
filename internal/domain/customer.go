@@ -7,7 +7,7 @@ type Cliente struct {
 	Direccion string `gorm:"column:direccion;type:varchar(255)" json:"direccion"`
 	Telefono  string `gorm:"column:telefono;type:varchar(20)" json:"telefono"`
 	Email     string `gorm:"column:email;type:varchar(100)" json:"email"`
-	Estado    *bool  `gorm:"column:estado;default:true" json:"estado"`
+	Estado    string `gorm:"column:estado;type:varchar(50);not null" json:"estado"`
 }
 
 func (Cliente) TableName() string {

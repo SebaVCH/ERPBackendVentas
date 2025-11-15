@@ -30,7 +30,7 @@ func NewSaleUseCase(saleRepo repository.SaleRepository, cartRepo repository.Cart
 
 type CreateSaleRequest struct {
 	IDCliente         int    `json:"id_cliente" `
-	DireccionEnvio    string `json:"direccion_envio" `
+	IDDireccion       int    `json:"id_direccion" `
 	FormaDePago       string `json:"forma_de_pago" `
 	CondicionesDePago string `json:"condiciones_de_pago" `
 }
@@ -87,8 +87,8 @@ func (u *saleUsecase) CreateSale(ctx *gin.Context) {
 	venta := domain.Venta{
 		IDCliente:         req.IDCliente,
 		IDCarrito:         cart.IDCart,
+		IDDireccion:       req.IDDireccion,
 		FechaPedido:       time.Now(),
-		DireccionEnvio:    req.DireccionEnvio,
 		Total:             total,
 		Estado:            "PAGADO",
 		FormaDePago:       req.FormaDePago,

@@ -93,9 +93,6 @@ func (r *saleRepository) GetSales() ([]domain.Venta, error) {
 	err := r.db.
 		Preload("Cliente").
 		Preload("Carrito").
-		Preload("Carrito.Cliente").
-		Preload("DetallesVenta").
-		Preload("DetallesVenta.Producto").
 		Find(&ventas).Error
 	if err != nil {
 		return nil, err
@@ -108,9 +105,6 @@ func (r *saleRepository) GetSale(id int) (*domain.Venta, error) {
 	err := r.db.
 		Preload("Cliente").
 		Preload("Carrito").
-		Preload("Carrito.Cliente").
-		Preload("DetallesVenta").
-		Preload("DetallesVenta.Producto").
 		First(&venta, "id_venta = ?", id).Error
 	if err != nil {
 		return nil, err

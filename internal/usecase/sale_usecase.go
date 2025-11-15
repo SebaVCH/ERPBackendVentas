@@ -124,24 +124,44 @@ func (u *saleUsecase) CreateSale(ctx *gin.Context) {
 func (su *saleUsecase) GetSales(c *gin.Context) {
 	sales, err := su.SaleRepo.GetSales()
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener las ventas"})
+		respondJSON(c, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "Error al obtener las ventas",
+			Error:   err.Error(),
+		})
 		return
 	}
-	c.IndentedJSON(http.StatusOK, sales)
+	respondJSON(c, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "ventas obtenidas exitosamente",
+		Data:    sales,
+	})
 }
 
 func (su *saleUsecase) GetSale(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "id inválido"})
+		respondJSON(c, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "id inválido",
+			Error:   "id debe ser numérico",
+		})
 		return
 	}
 
 	sale, err := su.SaleRepo.GetSale(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Venta no encontrada"})
+		respondJSON(c, http.StatusNotFound, APIResponse{
+			Success: false,
+			Message: "Venta no encontrada",
+			Error:   err.Error(),
+		})
 		return
 	}
-	c.IndentedJSON(http.StatusOK, sale)
+	respondJSON(c, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "venta obtenida exitosamente",
+		Data:    sale,
+	})
 }

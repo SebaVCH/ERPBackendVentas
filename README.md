@@ -1,4 +1,13 @@
 # ERPBackendVentas
+
+# Dependencias del Proyecto
+
+### WKHTHMLTOPDF 
+- wkhtmltopdf https://wkhtmltopdf.org/
+- En el .env agregar: WKHTMLTOPFD_PATH=<directorio_del_ejecutable> (ej: "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe")
+
+
+
 # Formate de la peticion POST de sale
 {
     "id_cliente": 2,

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+
+<style>
+body {
+    margin: 20px 40px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: #111;
+    font-size: 13px;
+}
+
+h1, h2, h3 { margin: 0; padding: 0; }
+
+hr {
+    border: none;
+    border-top: 1px solid #bbb;
+    margin: 20px 0;
+}
+
+.header-band {
+    width: 100%;
+    background: #f4f4f4;
+    border: 1px solid #d1d1d1;
+    padding: 12px 18px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-band .left {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.header-band .right {
+    text-align: right;
+    font-size: 12px;
+    color: #444;
+}
+
+.doc-box {
+    border: 2px solid #000;
+    padding: 18px;
+    width: 260px;
+}
+
+.doc-title {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.doc-number {
+    margin-top: 6px;
+    font-size: 15px;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table td {
+    padding: 4px 0;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.items-table thead {
+    background: #efefef;
+    border-bottom: 1px solid #ccc;
+}
+
+.items-table th {
+    padding: 8px;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+}
+
+.items-table td {
+    padding: 7px 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.summary-box {
+    width: 300px;
+    margin-left: auto;
+    margin-top: 25px;
+    font-size: 13px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.summary-final {
+    font-size: 15px;
+    font-weight: bold;
+    border-top: 2px solid #000;
+    padding-top: 8px;
+}
+
+.footer {
+    margin-top: 40px;
+    font-size: 11px;
+    color: #555;
+    text-align: center;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header-band">
+    <div class="left">{{ .Empresa.Nombre }}</div>
+    <div class="right">
+        RUT {{ .Empresa.RUT }}<br>
+        {{ .Empresa.Direccion }}
+    </div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+
+    <div class="company-info">
+        <strong>Giro:</strong> {{ .Empresa.Giro }}<br>
+        <strong>Contacto:</strong> {{ .Empresa.Email }}<br>
+        <strong>Teléfono:</strong> {{ .Empresa.Telefono }}<br>
+        <strong>Fecha Emisión:</strong> {{ .Boleta.FechaEmision }}
+    </div>
+
+    <div class="doc-box">
+        <div class="doc-title">{{ .Boleta.TipoDocumento }}</div>
+        <div class="doc-number">N° {{ .Boleta.Numero }}</div>
+    </div>
+
+</div>
+
+<hr>
+
+<div class="section-title">Datos del Cliente</div>
+
+<table class="data-table">
+    <tr><td><strong>Nombre:</strong> {{ .Cliente.Nombre }}</td></tr>
+    <tr><td><strong>RUT:</strong> {{ .Cliente.RUT }}</td></tr>
+    <tr><td><strong>Dirección:</strong> {{ .Cliente.Direccion }}</td></tr>
+</table>
+
+<hr>
+
+<div class="section-title">Detalle de Servicios</div>
+
+<table class="items-table">
+<thead>
+    <tr>
+        <th style="width: 60%;">Descripción</th>
+        <th style="width: 10%;">Cant.</th>
+        <th style="width: 15%;">P. Unitario</th>
+        <th style="width: 15%;">Total</th>
+    </tr>
+</thead>
+
+<tbody>
+    {{range .Items}}
+    <tr>
+        <td>{{ .Descripcion }}</td>
+        <td>{{ .Cantidad }}</td>
+        <td>${{ .PrecioUnitario }}</td>
+        <td>${{ .Total }}</td>
+    </tr>
+    {{end}}
+</tbody>
+</table>
+
+<div class="summary-box">
+    <div class="summary-row"><span>Subtotal:</span> <span>${{ .Resumen.Subtotal }}</span></div>
+    <div class="summary-row"><span>IVA ({{ .Resumen.PorcentajeIVA }}%):</span> <span>${{ .Resumen.MontoIVA }}</span></div>
+    <div class="summary-row summary-final"><span>Total:</span> <span>${{ .Resumen.Total }}</span></div>
+</div>
+
+<div class="footer">
+    {{ .Boleta.TextoPie }}
+</div>
+
+</body>
+</html>

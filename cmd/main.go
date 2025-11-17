@@ -7,6 +7,7 @@ import (
 	"github.com/SebaVCH/ERPBackendVentas/cmd/app"
 	"github.com/SebaVCH/ERPBackendVentas/internal/config"
 	"github.com/SebaVCH/ERPBackendVentas/internal/infrastructure/database"
+	"github.com/SebaVCH/ERPBackendVentas/internal/utils"
 )
 
 func main() {
@@ -16,6 +17,11 @@ func main() {
 
 	if err := config.LoadEnv(); err != nil {
 		slog.Error("Error al cargar las variables de entorno.", "error", err)
+		os.Exit(1)
+	}
+
+	if err := utils.StartPDFEngine(); err != nil {
+		slog.Error("Error al conectarse con wkhtmltopdf.", "error", err)
 		os.Exit(1)
 	}
 

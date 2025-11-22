@@ -24,7 +24,6 @@ func NewDirectionRepository() DirectionRepository {
 func (r *directionRepository) GetDirections() ([]domain.Direccion, error) {
 	var directions []domain.Direccion
 	err := r.db.
-		Preload("Cliente").
 		Find(&directions).Error
 	if err != nil {
 		return nil, err

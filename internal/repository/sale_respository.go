@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
 	"github.com/SebaVCH/ERPBackendVentas/internal/infrastructure/database"
@@ -53,11 +54,36 @@ func (r *saleRepository) CreateSale(venta *domain.Venta, detalles []domain.Detal
 			return errors.New("no se pudo obtener el ID de la venta creada")
 		}
 
+		// Validar reservas: cargar reservas del carrito para los productos de la venta
+		var productIDs []int
+		for i := range detalles {
+			productIDs = append(productIDs, detalles[i].IDProducto)
+		}
+
+		var reservas []domain.CarritoReserva
+		if err := tx.Where("id_carrito = ? AND id_producto IN ?", venta.IDCarrito, productIDs).Find(&reservas).Error; err != nil {
+			return err
+		}
+
+		reservasMap := make(map[int]domain.CarritoReserva, len(reservas))
+		for _, r := range reservas {
+			reservasMap[r.ProductoID] = r
+		}
+
 		// Ahora se crean los detalles de la venta
 		for i := range detalles {
+			
+			// Validar que exista una reserva válida y no expirada para este producto
+			res, ok := reservasMap[detalles[i].IDProducto]
+			if !ok {
+				return errors.New("no hay reserva para el producto id " + fmt.Sprint(detalles[i].IDProducto))
+			}
+			if time.Now().After(res.FechaReserva) {
+				return errors.New("la reserva para el producto id " + fmt.Sprint(detalles[i].IDProducto) + " ha expirado")
+			}
 
 			detalles[i].IDVenta = venta.IDVenta
-
+            
 			var product domain.Producto
 
 			// Se obtiene el producto de dicha id
@@ -85,6 +111,11 @@ func (r *saleRepository) CreateSale(venta *domain.Venta, detalles []domain.Detal
 			if result.RowsAffected == 0 {
 				return errors.New("stock insuficiente para producto id " + fmt.Sprint(detalles[i].IDProducto))
 			}
+
+			// aca elimina reserva asociada al carrito y producto 
+			if err := tx.Delete(&domain.CarritoReserva{}, "id_carrito = ? AND id_producto = ?", venta.IDCarrito, detalles[i].IDProducto).Error; err != nil {
+				return err
+			}
 		}
 
 		// Como ya se realizo la venta correctamente, el carrito queda como inactivo
@@ -105,9 +136,6 @@ func (r *saleRepository) CreateSale(venta *domain.Venta, detalles []domain.Detal
 func (r *saleRepository) GetSales() ([]domain.Venta, error) {
 	var ventas []domain.Venta
 	err := r.db.
-		Preload("Cliente").
-		Preload("Carrito").
-		Preload("Direccion").
 		Find(&ventas).Error
 	if err != nil {
 		return nil, err
@@ -118,9 +146,6 @@ func (r *saleRepository) GetSales() ([]domain.Venta, error) {
 func (r *saleRepository) GetSale(id int) (*domain.Venta, error) {
 	var venta domain.Venta
 	err := r.db.
-		Preload("Cliente").
-		Preload("Carrito").
-		Preload("Direccion").
 		First(&venta, "id_venta = ?", id).Error
 	if err != nil {
 		return nil, err

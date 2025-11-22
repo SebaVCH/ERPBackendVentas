@@ -4,7 +4,6 @@ import (
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
 	"github.com/SebaVCH/ERPBackendVentas/internal/infrastructure/database"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type CustomerRepository interface {
@@ -24,7 +23,7 @@ func NewCustomerRepository() CustomerRepository {
 
 func (cu customerRepository) GetCustomers() ([]domain.Cliente, error) {
 	var customers []domain.Cliente
-	err := cu.db.Find(&customers).Preload(clause.Associations).Error
+	err := cu.db.Find(&customers).Error
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +33,7 @@ func (cu customerRepository) GetCustomers() ([]domain.Cliente, error) {
 // Funcion para obtener un cliente dentro de una transaccion en el paquete repository
 func (cu *customerRepository) GetCustomerTx(id int) (bool, error) {
 	var customer domain.Cliente
-	err := cu.db.First(&customer, "id_cliente = ?", id).Preload(clause.Associations).Error
+	err := cu.db.First(&customer, "id_cliente = ?", id).Error
 	if err != nil {
 		return false, err
 	}

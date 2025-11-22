@@ -17,4 +17,5 @@ func SetupCartRoutes(r *gin.Engine) {
 	r.POST("/cart/item", cartController.AddCartItem)
 	r.PUT("/cart/item/remove", cartController.RemoveCartItem)
 	r.DELETE("/cart/clear", cartController.ClearCart)
+	r.POST("/cart/reserve", cartController.ReserveSaleStock)
 }

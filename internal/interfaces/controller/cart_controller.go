@@ -34,3 +34,7 @@ func (cc *CartController) RemoveCartItem(c *gin.Context) {
 func (cc *CartController) ClearCart(c *gin.Context) {
 	cc.CartUseCase.ClearCart(c)
 }
+
+func (cc *CartController) ReserveSaleStock(c *gin.Context) {
+	cc.CartUseCase.ReserveSaleStock(c)
+}

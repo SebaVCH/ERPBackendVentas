@@ -16,6 +16,7 @@ type CartUseCase interface {
 	AddCartItem(c *gin.Context)
 	RemoveCartItem(c *gin.Context)
 	ClearCart(c *gin.Context)
+	ReserveSaleStock(c *gin.Context)
 	VerifyCartItems(c *gin.Context) (domain.CarritoProducto, int, error)
 }
 
@@ -47,9 +48,48 @@ type APIResponse struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+type ReserveStockRequest struct {
+	IDCliente    int `json:"id_cliente"`
+}
+
 // Esto lo cree para tener un formato de respuesta uniforme
 func respondJSON(ctx *gin.Context, status int, resp APIResponse) {
 	ctx.JSON(status, resp)
+}
+
+func (c *cartUseCase) ReserveSaleStock(ctx *gin.Context) {
+	var req ReserveStockRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "request invalido",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if req.IDCliente <= 0 {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "IDCliente invalido",
+			Error:   "El id del cliente debe ser mayor a 0",
+		})
+		return
+	}
+
+	err := c.CartRepo.ReserveSaleStock(req.IDCliente)
+	if err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "error al reservar el stock para la venta",
+			Error:   err.Error(),
+		})
+		return
+	}
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "stock reservado exitosamente para la venta",
+	})
 }
 
 func (c *cartUseCase) CreateCart(ctx *gin.Context) {

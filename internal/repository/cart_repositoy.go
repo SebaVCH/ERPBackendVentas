@@ -20,6 +20,7 @@ type CartRepository interface {
 	ClearCart(userID int) error
 	ReserveSaleStock(clientID int) error
 	AuxiliarItemVerificationTx(tx *gorm.DB, clientID int, cartProduct domain.CarritoProducto) error
+	GetCartsByClientID(clientID int) ([]domain.Carrito, error)
 }
 
 type cartRepository struct {
@@ -84,9 +85,9 @@ func (r *cartRepository) ReserveSaleStock(clientID int) error {
 
 			// Crear la reserva con expiracion a 5 minutos (usar UTC para evitar desalineos de zona horaria)
 			reserva := domain.CarritoReserva{
-				CarritoID:   carrito.IDCart,
-				ClienteID:   clientID,
-				ProductoID:  cp.IDProducto,
+				CarritoID:    carrito.IDCart,
+				ClienteID:    clientID,
+				ProductoID:   cp.IDProducto,
 				Stock:        cp.Cantidad,
 				FechaReserva: time.Now().UTC().Add(5 * time.Minute),
 			}
@@ -344,4 +345,14 @@ func (r *cartRepository) AuxiliarItemVerificationTx(tx *gorm.DB, clientID int, c
 	}
 
 	return nil
+}
+
+// GetCartsByClientID implements CartRepository.
+func (r *cartRepository) GetCartsByClientID(clientID int) (carts []domain.Carrito, err error) {
+	if err := r.db.
+		Where("id_cliente = ?", clientID).
+		Find(&carts).Error; err != nil {
+		return nil, err
+	}
+	return carts, nil
 }

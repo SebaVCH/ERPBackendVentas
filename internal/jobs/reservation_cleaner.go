@@ -14,7 +14,7 @@ func StartReservationCleaner(interval time.Duration) {
     defer ticker.Stop()
     db := database.DB
     for range ticker.C {
-+        var dbNow time.Time
+        var dbNow time.Time
         if err := db.Raw("SELECT now()").Scan(&dbNow).Error; err == nil {
             log.Printf("reservation cleaner running, db now: %v", dbNow)
         } else {

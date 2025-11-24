@@ -15,6 +15,7 @@ type SaleRepository interface {
 	GetSale(id int) (*domain.Venta, error)
 	CreateSale(venta *domain.Venta, detalles []domain.DetalleVenta) error
 	GetProductQuantity(pID int) int
+	GetSalesByClientID(clientID int) (sales []domain.Venta, err error)
 }
 
 type saleRepository struct {
@@ -160,4 +161,14 @@ func (r *saleRepository) GetProductQuantity(pID int) int {
 		return 0
 	}
 	return producto.Cantidad
+}
+
+
+func (r *saleRepository) GetSalesByClientID(clientID int) (sales []domain.Venta, err error) {
+	if err := r.db.
+		Where("id_cliente = ?", clientID).
+		Find(&sales).Error; err != nil {
+			return nil, err	
+	}
+	return sales, nil
 }

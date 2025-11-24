@@ -9,7 +9,9 @@ import (
 
 func SetupCustomerRoutes(r *gin.Engine) {
 	customerRepo := repository.NewCustomerRepository()
-	customerUseCase := usecase.NewCustomerUseCase(customerRepo)
+	salesRepo := repository.NewSaleRepository()
+	cartRepo := repository.NewCartRepository()
+	customerUseCase := usecase.NewCustomerUseCase(customerRepo, salesRepo, cartRepo)
 	customerController := controller.NewCustomerController(customerUseCase)
 
 	r.GET("/clientes", customerController.GetCustomers)

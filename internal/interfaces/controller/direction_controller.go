@@ -22,3 +22,16 @@ func (dc *DirectionController) CreateDirection(c *gin.Context) {
 func (dc *DirectionController) GetDirections(c *gin.Context) {
 	dc.DirectionUsecase.GetDirections(c)
 }
+
+func (dc *DirectionController) GetDirectionsByClientID(c *gin.Context) {
+	dc.DirectionUsecase.GetDirectionsByClientID(c)
+}
+
+func (dc *DirectionController) UpdateDirection(c *gin.Context) {
+	dc.DirectionUsecase.UpdateDirection(c)
+}
+
+
+func (dc *DirectionController) DeleteDirection(c *gin.Context) {
+	dc.DirectionUsecase.DeleteDirection(c)
+}

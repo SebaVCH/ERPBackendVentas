@@ -46,21 +46,21 @@ func (cu customerUseCase) GetCustomers(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, customers)
 }
 
-func (cu customerUseCase) resolveEstado(carts []domain.Carrito, sales []domain.Venta) string {
-	if cu.isClientePerdido(sales) {
-		return "CLIENTE PERDIDO"
+func (cu customerUseCase) resolveEstado(carts []domain.Carrito, sales []domain.Venta) domain.EstadoCliente {
+	switch {
+	case cu.isClientePerdido(sales):
+		return domain.EstadoClientePerdido
+	case len(sales) > 1:
+		return domain.EstadoClienteActivo
+	case len(sales) == 1:
+		return domain.EstadoClienteNuevo
+	case len(carts) > 0:
+		return domain.EstadoInteresado
+	default:
+		return domain.EstadoProspecto
 	}
-	if len(sales) > 1 {
-		return "CLIENTE ACTIVO"
-	}
-	if len(sales) == 1 {
-		return "CLIENTE"
-	}
-	if len(carts) > 0 {
-		return "INTERESADO"
-	}
-	return "PROSPECTO"
 }
+
 
 func (cu customerUseCase) isClientePerdido(sales []domain.Venta) bool {
 	filterSales := utils.Filter(sales, func(s domain.Venta) bool {

@@ -9,6 +9,7 @@ import (
 type CustomerRepository interface {
 	GetCustomers() ([]domain.Cliente, error)
 	GetCustomerTx(id int) (bool, error)
+	GetCustomerByID(id int) (domain.Cliente, error)
 }
 
 type customerRepository struct {
@@ -38,4 +39,14 @@ func (cu *customerRepository) GetCustomerTx(id int) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// GetCustomerByID implements CustomerRepository.
+func (cu *customerRepository) GetCustomerByID(id int) (domain.Cliente, error) {
+	var customer domain.Cliente
+	err := cu.db.First(&customer, "id_cliente = ?", id).Error
+	if err != nil {
+		return domain.Cliente{}, err
+	}
+	return customer, nil
 }

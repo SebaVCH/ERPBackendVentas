@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
 	"github.com/SebaVCH/ERPBackendVentas/internal/repository"
@@ -11,6 +12,7 @@ import (
 
 type CustomerUseCase interface {
 	GetCustomers(c *gin.Context)
+	GetCustomerByID (c *gin.Context) error
 }
 
 type customerUseCase struct {
@@ -46,6 +48,34 @@ func (cu customerUseCase) GetCustomers(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, customers)
 }
 
+func (cu customerUseCase) GetCustomerByID(ctx *gin.Context) error {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "id_dirección inválido",
+			Error:   "se requiere un id_numérico mayor a 0"})
+		return err
+	}
+	client, err := cu.CustomerRepo.GetCustomerByID(id)
+	if err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "Error Interno al obtener el cliente",
+			Error:   err.Error()})
+		return err
+	}
+
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "cliente obtenido correctamente",
+		Data: client,
+	})
+
+	return nil
+}
+
 func (cu customerUseCase) resolveEstado(carts []domain.Carrito, sales []domain.Venta) domain.EstadoCliente {
 	switch {
 	case cu.isClientePerdido(sales):
@@ -60,7 +90,6 @@ func (cu customerUseCase) resolveEstado(carts []domain.Carrito, sales []domain.V
 		return domain.EstadoProspecto
 	}
 }
-
 
 func (cu customerUseCase) isClientePerdido(sales []domain.Venta) bool {
 	filterSales := utils.Filter(sales, func(s domain.Venta) bool {

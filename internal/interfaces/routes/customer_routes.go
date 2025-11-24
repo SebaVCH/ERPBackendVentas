@@ -15,4 +15,5 @@ func SetupCustomerRoutes(r *gin.Engine) {
 	customerController := controller.NewCustomerController(customerUseCase)
 
 	r.GET("/clientes", customerController.GetCustomers)
+	r.GET("/clientes/:id", customerController.GetCustomerByID)
 }

@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
 	"github.com/SebaVCH/ERPBackendVentas/internal/infrastructure/database"
 	"gorm.io/gorm"
@@ -60,7 +58,6 @@ func (r *directionRepository) GetDirectionsByClientID(clientID int) (direcciones
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(direcciones)
 	return direcciones, nil
 }
 
@@ -79,7 +76,10 @@ func (r *directionRepository) UpdateDirection(directionID int, updated *domain.D
 	return nil
 }
 
-
 func (r *directionRepository) DeleteDirection(directionID int) error {
-	return r.db.Delete(&domain.Direccion{}, directionID).Error
+	result := r.db.Delete(&domain.Direccion{}, directionID)
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return result.Error
 }

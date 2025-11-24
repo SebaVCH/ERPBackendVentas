@@ -129,7 +129,7 @@ func (u *directionUsecase) GetDirectionsByClientID(ctx *gin.Context) ([]domain.D
 			Error:   err.Error()})
 		return nil, err
 	}
-	respondJSON(ctx, http.StatusBadRequest, APIResponse{
+	respondJSON(ctx, http.StatusOK, APIResponse{
 		Success: true,
 		Message: "Direcciones obtenidas exitosamente",
 		Data:    directions,
@@ -170,7 +170,15 @@ func (u *directionUsecase) UpdateDirection(ctx *gin.Context) error {
 		Etiqueta:     req.Etiqueta,
 	}
 
-	err = u.directionRepo.UpdateDirection(id, direccion)
+	if err = u.directionRepo.UpdateDirection(id, direccion); err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "Error interno",
+			Error: err.Error(),
+		})
+		return err
+	}
+
 
 	respondJSON(ctx, http.StatusOK, APIResponse{
 		Success: true,

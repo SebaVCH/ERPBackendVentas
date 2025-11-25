@@ -12,9 +12,9 @@ func SetupDirectionRoutes(rg *gin.Engine) {
 	directionUsecase := usecase.NewDirectionUsecase(directionRepo)
 	directionController := controller.NewDirectionController(directionUsecase)
 
-	rg.POST("/direction", directionController.CreateDirection)
-	rg.GET("/direction", directionController.GetDirections)
-	rg.GET("/direction/:clientID", directionController.GetDirectionsByClientID)
-	rg.PUT("/direction/:id", directionController.UpdateDirection)
-	rg.DELETE("/direction/:id", directionController.DeleteDirection)
+	rg.POST("/directions", directionController.CreateDirection)
+	rg.GET("/directions", directionController.GetDirections)
+	rg.GET("/clientes/:id/directions", directionController.GetDirectionsByClientID)
+	rg.PUT("/directions/:id", directionController.UpdateDirection)
+	rg.DELETE("/directions/:id", directionController.DeleteDirection)
 }

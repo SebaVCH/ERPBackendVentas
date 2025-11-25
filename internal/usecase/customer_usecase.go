@@ -3,17 +3,27 @@ package usecase
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
 	"github.com/SebaVCH/ERPBackendVentas/internal/repository"
 	"github.com/SebaVCH/ERPBackendVentas/internal/utils"
+	"github.com/SebaVCH/ERPBackendVentas/internal/utils/templates"
 	"github.com/gin-gonic/gin"
 )
+
+func respondError(ctx *gin.Context, status int, err error, msg string) {
+	respondJSON(ctx, status, APIResponse{
+		Success: false,
+		Message: msg,
+		Error:   err.Error(),
+	})
+}
 
 type CustomerUseCase interface {
 	GetCustomers(c *gin.Context)
 	GetCustomerByID(c *gin.Context) error
-	SendEmail(c *gin.Context) error
+	SendEmail(c *gin.Context)
 }
 
 type customerUseCase struct {
@@ -23,11 +33,11 @@ type customerUseCase struct {
 }
 
 type SendEmailRequest struct {
-	ClientID    int      `json:"id_cliente"`
-	To          []string `json:"to"`
-	Subject     string   `json:"subject"`
-	BodyHTML    string   `json:"body"`
-	Attachments []int    `json:"attachments"`
+	ClientID     int      `json:"id_cliente" binding:"required"`
+	To           []string `json:"to" binding:"required"`
+	Subject      string   `json:"subject" binding:"required"`
+	BodyHTML     string   `json:"body" binding:"required"`
+	BoletaVentas []int    `json:"boleta_ventas" binding:"required"`
 }
 
 func NewCustomerUseCase(customerRepo repository.CustomerRepository, salesRepo repository.SaleRepository, cartRepo repository.CartRepository) CustomerUseCase {
@@ -107,26 +117,114 @@ func (cu customerUseCase) isClientePerdido(sales []domain.Venta) bool {
 	return len(filterSales) > 0
 }
 
-func (cu *customerUseCase) SendEmail(ctx *gin.Context) error {
+func (cu *customerUseCase) SendEmail(ctx *gin.Context) {
 	var req SendEmailRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		respondJSON(ctx, http.StatusBadRequest, APIResponse{
-			Success: false,
-			Message: "request invalido",
-			Error:   err.Error(),
-		})
-		return nil
+		respondError(ctx, http.StatusBadRequest, err, "Request inválido")
+		return
 	}
 
-	_, err := cu.CustomerRepo.GetCustomerByID(req.ClientID)
+	customer, err := cu.CustomerRepo.GetCustomerByID(req.ClientID)
 	if err != nil {
-		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
-			Success: false,
-			Message: "error",
-			Error:   err.Error(),
-		})
-		return nil
+		respondError(ctx, http.StatusInternalServerError, err, "error")
+		return
 	}
-	return nil
+
+	empresa := &templates.Empresa{
+		Nombre:    "COMERCIAL SI2 SPA",
+		RUT:       "12.345.678-9",
+		Direccion: "Av. Siempre Viva 1234 - Coquimbo",
+		Giro:      "Servicio Retail",
+		Email:     "erpventassi@gmail.com",
+		Telefono:  "+56 9 1234 5678",
+	}
+
+	cliente := &templates.Cliente{
+		Nombre:    customer.Nombre + " " + customer.Apellido,
+		RUT:       customer.Telefono,
+		Direccion: customer.Direccion,
+	}
+
+	var pdfBytes []utils.Attachment
+	for _, idVenta := range req.BoletaVentas {
+		boleta := &templates.Boleta{
+			TipoDocumento: "BOLETA ELECTRÓNICO",
+			Numero:        strconv.Itoa(idVenta),
+			FechaEmision:  time.Now().Format("02/01/2006"),
+			TextoPie:      "Documento generado automáticamente. \nNo requiere firma ni timbre.",
+		}
+
+		venta, err := cu.SalesRepo.GetSale(idVenta)
+		if err != nil {
+			respondError(ctx, http.StatusInternalServerError, err, "error")
+			return
+		}
+		detallesVentas, err := cu.SalesRepo.GetSalesDetails(idVenta)
+
+		if err != nil {
+			respondError(ctx, http.StatusInternalServerError, err, "error")
+			return
+		}
+
+		var items []templates.Item
+		for _, detalle := range detallesVentas {
+			item := templates.Item{
+				Descripcion:    detalle.Producto.Nombre,
+				Cantidad:       detalle.Cantidad,
+				PrecioUnitario: strconv.FormatFloat(detalle.PrecioUnit, 'f', -1, 64),
+				Total:          strconv.FormatFloat(detalle.PrecioUnit*(float64(detalle.Cantidad)), 'f', -1, 64),
+			}
+			items = append(items, item)
+		}
+
+		resumen := templates.Resumen{
+			Subtotal:      strconv.FormatFloat(venta.Total, 'f', -1, 64),
+			PorcentajeIVA: 19,
+			MontoIVA:      strconv.FormatFloat(venta.Total*0.19, 'f', -1, 64),
+			Total:         strconv.FormatFloat(venta.Total*1.19, 'f', -1, 64),
+		}
+
+		data := templates.BoletaData{
+			Empresa: empresa,
+			Cliente: cliente,
+			Boleta:  boleta,
+			Items:   items,
+			Resumen: &resumen,
+		}
+
+		html, err := templates.InvoiceTemplateHTML(data)
+		if err != nil {
+			respondError(ctx, http.StatusInternalServerError, err, "error")
+			return
+		}
+
+		pdfByte, err := utils.GeneratePDFFromHTMLString(html)
+		if err != nil {
+			respondError(ctx, http.StatusInternalServerError, err, "error")
+			return
+		}
+		pdfBytes = append(pdfBytes, utils.Attachment{
+			FileName:    "boleta N°" + strconv.Itoa(idVenta) + ".pdf",
+			Buffer:      pdfByte,
+			ContentType: "application/pdf",
+		})
+	}
+
+	mail := &utils.Mail{
+		To:          []string{customer.Email},
+		Subject:     req.Subject,
+		BodyHTML:    req.BodyHTML,
+		Attachments: pdfBytes,
+	}
+
+	if err := utils.SendMail(mail); err != nil {
+		respondError(ctx, http.StatusInternalServerError, err, "error")
+		return
+	}
+
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "corredo enviado",
+	})
 }

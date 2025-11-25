@@ -28,6 +28,8 @@ func NewClientFromEnv() *Client {
 type PreferenceRequest struct {
     Items             []PreferenceItem `json:"items"`
     ExternalReference string           `json:"external_reference,omitempty"`
+    ExpirationDateFrom string          `json:"expiration_date_from,omitempty"`
+    ExpirationDateTo   string          `json:"expiration_date_to,omitempty"`
 }
 
 type PreferenceItem struct {
@@ -42,7 +44,7 @@ type PreferenceResponse struct {
     InitPoint string `json:"init_point"`
 }
 
-func (c *Client) CreatePreference(amount float64, title, externalRef string) (*PreferenceResponse, error) {
+func (c *Client) CreatePreference(amount float64, title, externalRef string, expiryMinutes int) (*PreferenceResponse, error) {
     if c.AccessToken == "" {
         return nil, fmt.Errorf("MP access token not provided")
     }
@@ -54,6 +56,15 @@ func (c *Client) CreatePreference(amount float64, title, externalRef string) (*P
             UnitPrice: amount,
         }},
         ExternalReference: externalRef,
+    }
+
+    // If expiryMinutes > 0, add expiration window
+    if expiryMinutes > 0 {
+        now := time.Now().UTC()
+        from := now.Format(time.RFC3339)
+        to := now.Add(time.Duration(expiryMinutes) * time.Minute).Format(time.RFC3339)
+        pref.ExpirationDateFrom = from
+        pref.ExpirationDateTo = to
     }
 
     payload, err := json.Marshal(pref)

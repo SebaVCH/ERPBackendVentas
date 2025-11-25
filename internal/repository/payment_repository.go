@@ -5,7 +5,7 @@ import (
 )
 
 type PaymentRepository interface {
-    CreatePreference(amount float64, title, externalRef string) (initPoint string, preferenceID string, err error)
+    CreatePreference(amount float64, title, externalRef string, expiryMinutes int) (initPoint string, preferenceID string, err error)
 }
 
 type paymentRepository struct {
@@ -18,8 +18,8 @@ func NewPaymentRepository() PaymentRepository {
     }
 }
 
-func (p *paymentRepository) CreatePreference(amount float64, title, externalRef string) (string, string, error) {
-    pr, err := p.mpClient.CreatePreference(amount, title, externalRef)
+func (p *paymentRepository) CreatePreference(amount float64, title, externalRef string, expiryMinutes int) (string, string, error) {
+    pr, err := p.mpClient.CreatePreference(amount, title, externalRef, expiryMinutes)
     if err != nil {
         return "", "", err
     }

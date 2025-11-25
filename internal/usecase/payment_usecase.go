@@ -35,7 +35,9 @@ func (pu *paymentUsecase) CreateCheckout(c *gin.Context) {
 
     externalRef := "cliente_" + strconv.FormatInt(int64(req.IDCliente), 10)
 
-    initPoint, prefID, err := pu.PayRepo.CreatePreference(req.Amount, req.Title, externalRef)
+    // Crear la preference con expiración corta (5 minutos)
+    const expiryMinutes = 5
+    initPoint, prefID, err := pu.PayRepo.CreatePreference(req.Amount, req.Title, externalRef, expiryMinutes)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "error creando preference", "error": err.Error()})
         return

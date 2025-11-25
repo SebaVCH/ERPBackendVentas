@@ -111,7 +111,7 @@ func (u *directionUsecase) GetDirections(ctx *gin.Context) ([]domain.Direccion, 
 
 func (u *directionUsecase) GetDirectionsByClientID(ctx *gin.Context) ([]domain.Direccion, error) {
 
-	idStr := ctx.Param("clientID")
+	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		respondJSON(ctx, http.StatusBadRequest, APIResponse{

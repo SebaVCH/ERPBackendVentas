@@ -12,13 +12,22 @@ import (
 
 type CustomerUseCase interface {
 	GetCustomers(c *gin.Context)
-	GetCustomerByID (c *gin.Context) error
+	GetCustomerByID(c *gin.Context) error
+	SendEmail(c *gin.Context) error
 }
 
 type customerUseCase struct {
 	CustomerRepo repository.CustomerRepository
 	SalesRepo    repository.SaleRepository
 	CartRepo     repository.CartRepository
+}
+
+type SendEmailRequest struct {
+	ClientID    int      `json:"id_cliente"`
+	To          []string `json:"to"`
+	Subject     string   `json:"subject"`
+	BodyHTML    string   `json:"body"`
+	Attachments []int    `json:"attachments"`
 }
 
 func NewCustomerUseCase(customerRepo repository.CustomerRepository, salesRepo repository.SaleRepository, cartRepo repository.CartRepository) CustomerUseCase {
@@ -70,7 +79,7 @@ func (cu customerUseCase) GetCustomerByID(ctx *gin.Context) error {
 	respondJSON(ctx, http.StatusOK, APIResponse{
 		Success: true,
 		Message: "cliente obtenido correctamente",
-		Data: client,
+		Data:    client,
 	})
 
 	return nil
@@ -96,4 +105,28 @@ func (cu customerUseCase) isClientePerdido(sales []domain.Venta) bool {
 		return s.FechaPedido.Year() > 2025
 	})
 	return len(filterSales) > 0
+}
+
+func (cu *customerUseCase) SendEmail(ctx *gin.Context) error {
+	var req SendEmailRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "request invalido",
+			Error:   err.Error(),
+		})
+		return nil
+	}
+
+	_, err := cu.CustomerRepo.GetCustomerByID(req.ClientID)
+	if err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "error",
+			Error:   err.Error(),
+		})
+		return nil
+	}
+	return nil
 }

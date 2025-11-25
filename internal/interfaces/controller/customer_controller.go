@@ -22,3 +22,7 @@ func (cu *CustomerController) GetCustomers(c *gin.Context) {
 func (cu *CustomerController) GetCustomerByID(c *gin.Context) {
 	cu.CustomerUseCase.GetCustomerByID(c)
 }
+
+func (cu * CustomerController) SendEmail(c *gin.Context) {
+	cu.CustomerUseCase.SendEmail(c)
+}

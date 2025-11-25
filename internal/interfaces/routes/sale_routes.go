@@ -16,5 +16,6 @@ func SetupSaleRoutes(rg *gin.Engine) {
 	rg.POST("/sales", saleController.CreateSale) // POST /api/sales
 	rg.GET("/sales", saleController.GetSales)    // GET  /api/sales
 	rg.GET("/sales/:id", saleController.GetSale) // GET  /api/sales/:id
+	rg.GET("/sales/:id/details", saleController.GetSalesDetails)
 
 }

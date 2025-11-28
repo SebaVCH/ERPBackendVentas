@@ -1,7 +1,17 @@
 # ERPBackendVentas
+
+# Dependencias del Proyecto
+
+### WKHTHMLTOPDF 
+- wkhtmltopdf https://wkhtmltopdf.org/
+- En el .env agregar: WKHTMLTOPFD_PATH=<directorio_del_ejecutable> (ej: "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe")
+
+
+
 # Formate de la peticion POST de sale
 {
-    "id_cliente": 2,
+    "id_cliente":1,
+    "id_direccion":1,
     "direccion_envio": "Av. Siempre Viva 742",
     "forma_de_pago": "Tarjeta",
     "condiciones_de_pago": "Pago completo"
@@ -69,3 +79,11 @@ Body JSON:
 }
 
 La respuesta contiene `init_point` para redirigir al checkout y `preference_id`.
+# Importante para el flujo de venta
+
+- PRIMERO SE MANEJA EL CARRITO CON NORMALIDAD
+- AL DARLE EN COMPRAR O EN PAGAR EL LOS PRODUCTOS DE DICHO CARRITO PASAN A RESERVA
+    /cart/reserve
+- SI PASAN 5 MINUTOS Y LA COMPRA NO SE FECTUA SE CAE DICHA COMPRA Y LA RESERVA SE ELIMINA.
+- PERO SI SE EFECTUA LA COMPRA CON NORMALIDAD DENTRO DEL TIEMPO, SE GENERA LA VENTA SE DESCUENTA DEL STOCK LOS PRODUCTO Y LA RESERVA SE ELIMINA.
+    /sales

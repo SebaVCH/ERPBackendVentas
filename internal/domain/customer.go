@@ -1,5 +1,18 @@
 package domain
 
+
+
+type EstadoCliente string
+
+const (
+    EstadoProspecto      EstadoCliente = "PROSPECTO"
+    EstadoInteresado     EstadoCliente = "INTERESADO"
+    EstadoClienteNuevo   EstadoCliente = "CLIENTE_NUEVO"
+    EstadoClienteActivo  EstadoCliente = "CLIENTE_ACTIVO"
+    EstadoClientePerdido EstadoCliente = "CLIENTE_PERDIDO"
+)
+
+
 type Cliente struct {
 	IDCliente int    `gorm:"column:id_cliente;primaryKey;autoIncrement" json:"id_cliente"`
 	Nombre    string `gorm:"column:nombre;type:varchar(100);not null" json:"nombre"`
@@ -7,7 +20,7 @@ type Cliente struct {
 	Direccion string `gorm:"column:direccion;type:varchar(255)" json:"direccion"`
 	Telefono  string `gorm:"column:telefono;type:varchar(20)" json:"telefono"`
 	Email     string `gorm:"column:email;type:varchar(100)" json:"email"`
-	Estado    string `gorm:"column:estado;type:varchar(50);not null" json:"estado"`
+	Estado    EstadoCliente `gorm:"column:estado;type:varchar(50);not null" json:"estado"`
 }
 
 func (Cliente) TableName() string {

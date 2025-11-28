@@ -18,3 +18,11 @@ func NewCustomerController(customerUseCase usecase.CustomerUseCase) *CustomerCon
 func (cu *CustomerController) GetCustomers(c *gin.Context) {
 	cu.CustomerUseCase.GetCustomers(c)
 }
+
+func (cu *CustomerController) GetCustomerByID(c *gin.Context) {
+	cu.CustomerUseCase.GetCustomerByID(c)
+}
+
+func (cu * CustomerController) SendEmail(c *gin.Context) {
+	cu.CustomerUseCase.SendEmail(c)
+}

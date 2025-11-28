@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
 	"github.com/SebaVCH/ERPBackendVentas/internal/repository"
@@ -11,11 +12,15 @@ import (
 type DirectionUsecase interface {
 	CreateDirection(ctx *gin.Context) error
 	GetDirections(ctx *gin.Context) ([]domain.Direccion, error)
+	GetDirectionsByClientID(ctx *gin.Context) ([]domain.Direccion, error)
+	UpdateDirection(ctx *gin.Context) error
+	DeleteDirection(ctx *gin.Context) error
 }
 
 type directionUsecase struct {
 	directionRepo repository.DirectionRepository
 }
+
 
 func NewDirectionUsecase(directionRepo repository.DirectionRepository) DirectionUsecase {
 	return &directionUsecase{
@@ -102,4 +107,113 @@ func (u *directionUsecase) GetDirections(ctx *gin.Context) ([]domain.Direccion, 
 	})
 	return directions, nil
 
+}
+
+func (u *directionUsecase) GetDirectionsByClientID(ctx *gin.Context) ([]domain.Direccion, error) {
+
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "id_cliente inválido",
+			Error:   "se requiere un id_numérico mayor a 0"})
+		return nil, err
+	}
+
+	directions, err := u.directionRepo.GetDirectionsByClientID(id)
+	if err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "Error al obtener las direcciones",
+			Error:   err.Error()})
+		return nil, err
+	}
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "Direcciones obtenidas exitosamente",
+		Data:    directions,
+	})
+	return directions, nil
+}
+
+func (u *directionUsecase) UpdateDirection(ctx *gin.Context) error {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "id_cliente inválido",
+			Error:   "se requiere un id_numérico mayor a 0"})
+		return err
+	}
+
+	var req DirectionRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "request invalido",
+			Error:   err.Error(),
+		})
+		return nil
+	}
+
+	direccion := &domain.Direccion{
+		IDDireccion:  id,
+		IDCliente:    req.IDCliente,
+		Direccion:    req.Direccion,
+		Numero:       req.Numero,
+		Ciudad:       req.Ciudad,
+		Region:       req.Region,
+		Comuna:       req.Comuna,
+		CodigoPostal: req.CodigoPostal,
+		Etiqueta:     req.Etiqueta,
+	}
+
+	if err = u.directionRepo.UpdateDirection(id, direccion); err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "Error interno",
+			Error: err.Error(),
+		})
+		return err
+	}
+
+
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "direcciones obtenidas exitosamente",
+		Data:    direccion,
+	})
+
+	return nil
+
+}
+
+
+func (u *directionUsecase) DeleteDirection(ctx *gin.Context) error {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "id_dirección inválido",
+			Error:   "se requiere un id_numérico mayor a 0"})
+		return err
+	}
+	if err = u.directionRepo.DeleteDirection(id); err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "Error interno",
+			Error: err.Error(),
+		})
+		return err
+	}
+
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "Dirección Eliminado Correctamente",
+		Data: "Eliminado Correctamente",
+	})
+	return nil
 }

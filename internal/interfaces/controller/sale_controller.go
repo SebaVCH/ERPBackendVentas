@@ -26,3 +26,7 @@ func (sc *SaleController) CreateSale(c *gin.Context) {
 func (sc *SaleController) GetSale(c *gin.Context) {
 	sc.SaleUseCase.GetSale(c)
 }
+
+func (sc *SaleController) GetSalesDetails(c *gin.Context) {
+	sc.SaleUseCase.GetSalesDetails(c)
+}

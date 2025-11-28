@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/SebaVCH/ERPBackendVentas/internal/domain"
@@ -17,7 +18,9 @@ type CartRepository interface {
 	AddCartItem(clientID int, cartProduct domain.CarritoProducto) error
 	RemoveCartItem(clientID int, cartProduct domain.CarritoProducto) error
 	ClearCart(userID int) error
+	ReserveSaleStock(clientID int) error
 	AuxiliarItemVerificationTx(tx *gorm.DB, clientID int, cartProduct domain.CarritoProducto) error
+	GetCartsByClientID(clientID int) ([]domain.Carrito, error)
 }
 
 type cartRepository struct {
@@ -28,6 +31,74 @@ func NewCartRepository() CartRepository {
 	return &cartRepository{
 		db: database.DB,
 	}
+}
+
+func (r *cartRepository) ReserveSaleStock(clientID int) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+
+		var cliente domain.Cliente
+		if err := tx.First(&cliente, "id_cliente = ?", clientID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("cliente no encontrado")
+			}
+			return err
+		}
+
+		var carrito domain.Carrito
+		if err := tx.Where("id_cliente = ? AND estado = ?", clientID, false).First(&carrito).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("carrito activo no encontrado para el cliente")
+			}
+			return err
+		}
+
+		var cartProducts []domain.CarritoProducto
+
+		if err := tx.Where("id_cart = ?", carrito.IDCart).Find(&cartProducts).Error; err != nil {
+			return err
+		}
+
+		if len(cartProducts) == 0 {
+			return errors.New("no hay items en el carrito para reservar")
+		}
+
+		// Para cada item: bloquear producto, verificar stock y crear reserva
+		for _, cp := range cartProducts {
+			// Bloqueo del registro del producto para evitar race conditions
+			var producto domain.Producto
+			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id_producto = ?", cp.IDProducto).First(&producto).Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return errors.New("producto no encontrado")
+				}
+				return err
+			}
+
+			// Verificar que haya stock suficiente
+			if producto.Cantidad < cp.Cantidad {
+				return errors.New("stock insuficiente para el producto id: " + fmt.Sprint(cp.IDProducto))
+			}
+
+			// Eliminar reservas previas para este carrito/producto (evita duplicados)
+			if err := tx.Delete(&domain.CarritoReserva{}, "id_carrito = ? AND id_producto = ?", carrito.IDCart, cp.IDProducto).Error; err != nil {
+				return err
+			}
+
+			// Crear la reserva con expiracion a 5 minutos (usar UTC para evitar desalineos de zona horaria)
+			reserva := domain.CarritoReserva{
+				CarritoID:    carrito.IDCart,
+				ClienteID:    clientID,
+				ProductoID:   cp.IDProducto,
+				Stock:        cp.Cantidad,
+				FechaReserva: time.Now().UTC().Add(5 * time.Minute),
+			}
+
+			if err := tx.Create(&reserva).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
 // Implementado
@@ -64,7 +135,7 @@ func (r *cartRepository) CreateCart(userID int) (domain.Carrito, error) {
 			return err
 		}
 
-		newCart.Cliente = cliente
+		newCart.Cliente = &cliente
 
 		return nil
 	}); err != nil {
@@ -96,7 +167,7 @@ func (r *cartRepository) CreateCartTx(tx *gorm.DB, userID int) (domain.Carrito, 
 		return domain.Carrito{}, err
 	}
 
-	newCart.Cliente = cliente
+	newCart.Cliente = &cliente
 	return newCart, nil
 }
 
@@ -106,7 +177,6 @@ func (r *cartRepository) GetCartItems(userID int) (*domain.Carrito, []domain.Car
 
 	var cart domain.Carrito
 	if err := r.db.
-		Preload("Cliente").
 		Where("id_cliente = ? AND estado = ?", userID, false).
 		First(&cart).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -117,9 +187,6 @@ func (r *cartRepository) GetCartItems(userID int) (*domain.Carrito, []domain.Car
 
 	var cartProducts []domain.CarritoProducto
 	if err := r.db.
-		Preload("Producto").
-		Preload("Carrito").
-		Preload("Carrito.Cliente").
 		Where("id_cart = ?", cart.IDCart).
 		Find(&cartProducts).Error; err != nil {
 		return &cart, nil, err
@@ -128,7 +195,7 @@ func (r *cartRepository) GetCartItems(userID int) (*domain.Carrito, []domain.Car
 	return &cart, cartProducts, nil
 }
 
-// Implementado deuda tecnica (NO HAY RESERVA DE STOCK AL SUMAR ITEMS)
+// Implementado deuda tecnica
 func (r *cartRepository) AddCartItem(clientID int, cartProduct domain.CarritoProducto) error {
 
 	return r.db.Transaction(func(tx *gorm.DB) error {
@@ -278,4 +345,14 @@ func (r *cartRepository) AuxiliarItemVerificationTx(tx *gorm.DB, clientID int, c
 	}
 
 	return nil
+}
+
+// GetCartsByClientID implements CartRepository.
+func (r *cartRepository) GetCartsByClientID(clientID int) (carts []domain.Carrito, err error) {
+	if err := r.db.
+		Where("id_cliente = ?", clientID).
+		Find(&carts).Error; err != nil {
+		return nil, err
+	}
+	return carts, nil
 }

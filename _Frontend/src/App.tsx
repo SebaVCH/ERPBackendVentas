@@ -5,6 +5,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Cart from './pages/Cart'
 
 
 const MainLayout = ({ children } : { children : React.ReactNode}) => {
@@ -32,7 +33,7 @@ export default function App() {
                         <Home />
                     </MainLayout>
                 }/>
-                <Route path="/mi-carrito" element={<MainLayout><Cart />}</MainLayout>/>
+                <Route path="/mi-carrito" element={<MainLayout><Cart /></MainLayout>}/>
             </Routes>
         </BrowserRouter>
     )

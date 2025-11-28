@@ -49,8 +49,10 @@ type APIResponse struct {
 }
 
 ## Integración Mercado Pago
+Ejecutar comando go get github.com/mercadopago/sdk-go@latest en caso de que no funcione
 
 Variables de entorno necesarias:
+
 
 - `MP_ACCESS_TOKEN` : Token de acceso (Bearer) de Mercado Pago
 

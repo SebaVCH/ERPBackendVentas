@@ -4,6 +4,7 @@ import (
     "bytes"
     "encoding/json"
     "fmt"
+    "io"
     "net/http"
     "os"
     "time"
@@ -85,12 +86,18 @@ func (c *Client) CreatePreference(amount float64, title, externalRef string, exp
     }
     defer resp.Body.Close()
 
+    // Read entire body for better error messages and decoding
+    bodyBytes, err := io.ReadAll(resp.Body)
+    if err != nil {
+        return nil, err
+    }
+
     if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-        return nil, fmt.Errorf("mercadopago responded with status %d", resp.StatusCode)
+        return nil, fmt.Errorf("mercadopago responded with status %d: %s", resp.StatusCode, string(bodyBytes))
     }
 
     var pr PreferenceResponse
-    if err := json.NewDecoder(resp.Body).Decode(&pr); err != nil {
+    if err := json.Unmarshal(bodyBytes, &pr); err != nil {
         return nil, err
     }
     return &pr, nil

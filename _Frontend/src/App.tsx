@@ -32,6 +32,7 @@ export default function App() {
                         <Home />
                     </MainLayout>
                 }/>
+                <Route path="/mi-carrito" element={<MainLayout><Cart />}</MainLayout>/>
             </Routes>
         </BrowserRouter>
     )

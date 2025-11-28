@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 import './App.css'
 import Home from './pages/Home'
 import Header from './components/Header'
@@ -8,12 +8,12 @@ import Register from './pages/Register'
 import Cart from './pages/Cart'
 
 
-const MainLayout = ({ children } : { children : React.ReactNode}) => {
+const MainLayout = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1">
-                {children}
+                <Outlet /> 
             </main>
             <Footer />
         </div>
@@ -28,12 +28,12 @@ export default function App() {
             <Routes>
                 <Route path='/login' element={<Login />} />
                 <Route path='/register' element={<Register />} />
-                <Route path='/' element={
-                    <MainLayout>
-                        <Home />
-                    </MainLayout>
-                }/>
-                <Route path="/mi-carrito" element={<MainLayout><Cart /></MainLayout>}/>
+
+                <Route element={<MainLayout />}>
+                    <Route path='/' element={<Home />} />
+                    <Route path='/mi-carrito' element={<Cart />} />
+                </Route>
+    
             </Routes>
         </BrowserRouter>
     )

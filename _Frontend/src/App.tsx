@@ -3,20 +3,36 @@ import './App.css'
 import Home from './pages/Home'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import Login from './pages/Login'
+import Register from './pages/Register'
+
+
+const MainLayout = ({ children } : { children : React.ReactNode}) => {
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1">
+                {children}
+            </main>
+            <Footer />
+        </div>
+    )
+}
+
 
 export default function App() {
+
     return (
         <BrowserRouter>
-            <div className="flex flex-col min-h-screen">
-                <Header />
-                <main className="flex-1">
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        {/* <Route path="/mi-carrito" element={<Cart />} /> */}
-                    </Routes>
-                </main>
-                <Footer />
-            </div>
+            <Routes>
+                <Route path='/login' element={<Login />} />
+                <Route path='/register' element={<Register />} />
+                <Route path='/' element={
+                    <MainLayout>
+                        <Home />
+                    </MainLayout>
+                }/>
+            </Routes>
         </BrowserRouter>
     )
 }

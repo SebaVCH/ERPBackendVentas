@@ -58,6 +58,27 @@ type APIResponse struct {
     "etiqueta": "Casa"
 }
 
+## Integración Mercado Pago
+Ejecutar comando go get github.com/mercadopago/sdk-go@latest en caso de que no funcione
+
+Variables de entorno necesarias:
+
+
+- `MP_ACCESS_TOKEN` : Token de acceso (Bearer) de Mercado Pago
+
+Ejemplo de petición para crear checkout:
+
+POST `/payments/checkout`
+
+Body JSON:
+
+{
+    "id_cliente": 2,
+    "amount": 12345.67,
+    "title": "Compra ejemplo"
+}
+
+La respuesta contiene `init_point` para redirigir al checkout y `preference_id`.
 # Importante para el flujo de venta
 
 - PRIMERO SE MANEJA EL CARRITO CON NORMALIDAD

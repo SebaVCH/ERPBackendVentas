@@ -1,5 +1,6 @@
 package domain
 
+import "time"
 
 
 type EstadoCliente string
@@ -16,6 +17,8 @@ const (
 type Cliente struct {
 	IDCliente int    `gorm:"column:id_cliente;primaryKey;autoIncrement" json:"id_cliente"`
 	Nombre    string `gorm:"column:nombre;type:varchar(100);not null" json:"nombre"`
+	PasswordHash string       `gorm:"column:password_hash;type:varchar(255)" json:"-"`
+	CreatedAt    time.Time    `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	Apellido  string `gorm:"column:apellido;type:varchar(100);not null" json:"apellido"`
 	Direccion string `gorm:"column:direccion;type:varchar(255)" json:"direccion"`
 	Telefono  string `gorm:"column:telefono;type:varchar(20)" json:"telefono"`

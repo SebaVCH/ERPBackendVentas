@@ -58,6 +58,27 @@ type APIResponse struct {
     "etiqueta": "Casa"
 }
 
+## Integración Mercado Pago
+Ejecutar comando go get github.com/mercadopago/sdk-go@latest en caso de que no funcione
+
+Variables de entorno necesarias:
+
+
+- `MP_ACCESS_TOKEN` : Token de acceso (Bearer) de Mercado Pago
+
+Ejemplo de petición para crear checkout:
+
+POST `/payments/checkout`
+
+Body JSON:
+
+{
+    "id_cliente": 2,
+    "amount": 12345.67,
+    "title": "Compra ejemplo"
+}
+
+La respuesta contiene `init_point` para redirigir al checkout y `preference_id`.
 # Importante para el flujo de venta
 
 - PRIMERO SE MANEJA EL CARRITO CON NORMALIDAD
@@ -66,3 +87,32 @@ type APIResponse struct {
 - SI PASAN 5 MINUTOS Y LA COMPRA NO SE FECTUA SE CAE DICHA COMPRA Y LA RESERVA SE ELIMINA.
 - PERO SI SE EFECTUA LA COMPRA CON NORMALIDAD DENTRO DEL TIEMPO, SE GENERA LA VENTA SE DESCUENTA DEL STOCK LOS PRODUCTO Y LA RESERVA SE ELIMINA.
     /sales
+
+ ## Autenticación JWT 
+
+    Endpoints añadidos:
+    - `POST /auth/register` : 
+    - `POST /auth/login` : 
+
+    Request `register`:
+    {
+        "cliente_id": 1,        // opcional: vincular a cliente existente
+        "nombre": "Juan",
+        "apellido": "Perez",
+        "email": "juan@example.com",
+        "password": "secret123"
+    }
+    ```
+
+    Request `login`:
+
+    {
+        "email": "juan@example.com",
+        "password": "secret123"
+    }
+
+
+    Variables de entorno nuevas:
+
+    - `JWT_SECRET` : secreto para firmar tokens JWT
+    - `JWT_EXPIRY_MINUTES` : expiración del token en minutos (ej. 1440 = 24h)

@@ -1,7 +1,7 @@
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import type { Address } from "../../Profile";
+import type { Address } from "../../../types/Address";
 
 
 type AddressPutDialogProps = {
@@ -10,7 +10,7 @@ type AddressPutDialogProps = {
     isOpen: boolean
     onClose: () => void
     address: Omit<Address, "id">
-    updateField: (field: keyof Address, value: string) => void
+    updateField: (field: keyof Address, value: Address[typeof field]) => void
     handleSubmit: () => void
 }
 
@@ -26,8 +26,8 @@ export default function AddressPutDialog({ title, isOpen, onClose, address, upda
                 <div className="flex flex-col gap-2">
                     <label className="font-semibold text-gray-700">Nombre de la dirección</label>
                     <InputText
-                        value={address.name}
-                        onChange={(e) => updateField("name", e.target.value)}
+                        value={address.label}
+                        onChange={(e) => updateField("label", e.target.value)}
                         placeholder="Ej: Casa, Trabajo"
                     />
                 </div>
@@ -60,13 +60,6 @@ export default function AddressPutDialog({ title, isOpen, onClose, address, upda
                     <InputText
                         value={address.postalCode}
                         onChange={(e) => updateField("postalCode", e.target.value)}
-                    />
-                </div>
-                <div className="flex flex-col gap-2">
-                    <label className="font-semibold text-gray-700">Teléfono</label>
-                    <InputText
-                        value={address.phone}
-                        onChange={(e) => updateField("phone", e.target.value)}
                     />
                 </div>
                 <div className="flex gap-2 justify-end mt-6">

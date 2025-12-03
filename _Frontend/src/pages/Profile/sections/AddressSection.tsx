@@ -1,7 +1,7 @@
 import { Card } from "primereact/card"
-import type { Address } from "../../Profile"
 import { Button } from "primereact/button"
 import { Tag } from "primereact/tag"
+import type { Address } from "../../../types/Address"
 
 
 
@@ -9,8 +9,8 @@ export type AddressSectionProps = {
     handleAgregarDireccion: () => void 
     addresses: Address[]
     handleEditAddress: (address : Address) => void
-    handleDeleteAddress: (idAddress : string) => void
-    handleDefaultAddress: (idAddress : string) => void
+    handleDeleteAddress: (idAddress : number) => void
+    handleDefaultAddress: (idAddress : number) => void
 }
 
 
@@ -28,11 +28,11 @@ export default function AddressSection({ handleAgregarDireccion, addresses, hand
 
             <div className="space-y-4">
                 {addresses.map((address) => (
-                    <Card key={address.id} className="bg-gray-50">
+                    <Card key={address.id} className="bg-gray-50! shadow-xs! border! border-gray-200!">
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <h3 className="font-bold text-gray-800">{address.name}</h3>
+                                    <h3 className="font-bold text-gray-800">{address.label}</h3>
                                     {address.isDefault && (
                                         <Tag value="Predeterminada" severity="success" />
                                     )}
@@ -40,7 +40,6 @@ export default function AddressSection({ handleAgregarDireccion, addresses, hand
                                 <p className="text-gray-700">{address.street}</p>
                                 <p className="text-gray-600">{address.city}, {address.region}</p>
                                 <p className="text-gray-600">CP: {address.postalCode}</p>
-                                <p className="text-gray-600">Tel: {address.phone}</p>
                             </div>
                             <div className="flex gap-2">
                                 <Button

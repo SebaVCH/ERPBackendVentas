@@ -7,7 +7,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Cart from './pages/Cart'
 import UserProfile from './pages/Profile'
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const MainLayout = () => {
     return (
@@ -21,22 +21,25 @@ const MainLayout = () => {
     )
 }
 
+const queryClient = new QueryClient()
 
 export default function App() {
 
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path='/login' element={<Login />} />
-                <Route path='/register' element={<Register />} />
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+                <Routes>
+                    <Route path='/login' element={<Login />} />
+                    <Route path='/register' element={<Register />} />
 
-                <Route element={<MainLayout />}>
-                    <Route path='/' element={<Home />} />
-                    <Route path='/mi-carrito' element={<Cart />} />
-                    <Route path='/mi-perfil' element={<UserProfile />} />
-                </Route>
-    
-            </Routes>
-        </BrowserRouter>
+                    <Route element={<MainLayout />}>
+                        <Route path='/' element={<Home />} />
+                        <Route path='/mi-carrito' element={<Cart />} />
+                        <Route path='/mi-perfil' element={<UserProfile />} />
+                    </Route>
+        
+                </Routes>
+            </BrowserRouter>
+        </QueryClientProvider>
     )
 }

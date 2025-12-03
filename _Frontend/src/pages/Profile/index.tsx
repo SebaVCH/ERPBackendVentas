@@ -1,37 +1,20 @@
 import { useMemo, useState } from "react";
-import { Card } from "primereact/card";
-import { Divider } from "primereact/divider";
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import { Avatar } from "primereact/avatar";
 import ProfileSection, { type ProfileSectionProps } from "./sections/ProfileSection";
 import AddressPutDialog from "./components/AddressDialog";
 import EditProfileDialog from "./components/EditProfileDialog";
 import AddressSection, { type AddressSectionProps } from "./sections/AddressSection";
-
-
-export interface UserProfile {
-    name: string;
-    email: string;
-    phone: string;
-    memberSince: string;
-}
-
-export interface Address {
-    id: string;
-    name: string;
-    street: string;
-    city: string;
-    region: string;
-    postalCode: string;
-    phone: string;
-    isDefault: boolean;
-}
+import { useClient } from "../../api/queries/useClients";
+import CardHeader from "./components/CardHeader";
+import type { Client } from "../../types/Client";
+import { ProfileSectionSkeleton } from "./components/ProfileSectionSkeleton";
+import type { Address } from "../../types/Address";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ProfileSection<Props = any> = {
+export type ProfileSection<Props = any> = {
     id: string
     label: string
     icon: string
@@ -59,57 +42,72 @@ type profileSectionsProps = {
     direccion: AddressSectionProps
 }
 
+
+const initForm : Client = {
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    id: 0,
+    state: ""
+} 
+
+const initAddressForm : Address = {
+    id: 0,
+    label: "",
+    street: "",
+    city: "",
+    region: "",
+    postalCode: "",
+    isDefault: false,
+    clientID: 0,
+    number: "",
+    commune: ""
+}
+
 export default function UserProfile() {
+
     const [activeSection, setActiveSection] = useState("perfil");
     const [editProfileVisible, setEditProfileVisible] = useState(false);
     const [addAddressVisible, setAddAddressVisible] = useState(false);
     const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
-    const [userProfile, setUserProfile] = useState<UserProfile>({
-        name: "Juan Pérez",
-        email: "juan.perez@email.com",
-        phone: "+56 9 1234 5678",
-        memberSince: "Enero 2024"
-    });
-
-    const [editForm, setEditForm] = useState(userProfile);
+    const [ editForm, setEditForm ] = useState<Client>(initForm)
+    const { data: userProfile, isSuccess } = useClient(1)
 
     const [addresses, setAddresses] = useState<Address[]>([
         {
-            id: "1",
-            name: "Casa",
+            id: 1,
+            label: "Casa",
             street: "Av. Libertador 1234, Depto 501",
             city: "La Serena",
             region: "Coquimbo",
             postalCode: "1700000",
-            phone: "+56 9 1234 5678",
-            isDefault: true
+            isDefault: true,
+            commune: "La Serena",
+            clientID: 0,
+            number: ""
         },
         {
-            id: "2",
-            name: "Trabajo",
+            id: 2,
+            label: "Trabajo",
             street: "Calle Comercio 567",
             city: "La Serena",
             region: "Coquimbo",
             postalCode: "1700000",
-            phone: "+56 9 8765 4321",
-            isDefault: false
+            isDefault: false,
+            clientID: 0,
+            number: "",
+            commune: ""
         }
     ]);
 
-    const [newAddress, setNewAddress] = useState<Omit<Address, 'id'>>({
-        name: "",
-        street: "",
-        city: "",
-        region: "",
-        postalCode: "",
-        phone: "",
-        isDefault: false
-    });
+    const [newAddress, setNewAddress] = useState<Omit<Address, 'id'>>(initAddressForm);
 
 
     const handleEditProfile = () => {
-        setUserProfile(editForm);
+        // setUserProfile(editForm);
         setEditProfileVisible(false);
     };
 
@@ -122,19 +120,11 @@ export default function UserProfile() {
         } else {
             const newAddr: Address = {
                 ...newAddress,
-                id: Date.now().toString()
+                id: -1
             };
             setAddresses([...addresses, newAddr]);
         }
-        setNewAddress({
-            name: "",
-            street: "",
-            city: "",
-            region: "",
-            postalCode: "",
-            phone: "",
-            isDefault: false
-        });
+        setNewAddress(initAddressForm);
         setAddAddressVisible(false);
     };
 
@@ -144,11 +134,11 @@ export default function UserProfile() {
         setAddAddressVisible(true);
     };
 
-    const handleDeleteAddress = (id: string) => {
+    const handleDeleteAddress = (id: number) => {
         setAddresses(addresses.filter(addr => addr.id !== id));
     };
 
-    const setDefaultAddress = (id: string) => {
+    const setDefaultAddress = (id: number) => {
         setAddresses(addresses.map(addr => ({
             ...addr,
             isDefault: addr.id === id
@@ -160,23 +150,17 @@ export default function UserProfile() {
     const sectionProps : profileSectionsProps = {
         perfil: {
             onClickEdit: () => {
+                if(!userProfile) return
+
                 setEditForm(userProfile);
                 setEditProfileVisible(true);
             },
-            userProfile: userProfile
+            userProfile: userProfile as Client
         },
         direccion: {
             handleAgregarDireccion: () => {
                 setEditingAddress(null);
-                setNewAddress({
-                    name: "",
-                    street: "",
-                    city: "",
-                    region: "",
-                    postalCode: "",
-                    phone: "",
-                    isDefault: false
-                });
+                setNewAddress(initAddressForm);
                 setAddAddressVisible(true);
             },
             addresses: addresses,
@@ -193,34 +177,18 @@ export default function UserProfile() {
                 <h1 className="text-3xl font-bold mb-8 text-gray-800">Centro Personal</h1>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-1">
-                        <Card className="shadow-lg">
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <Avatar label={userProfile.name.charAt(0)} size='xlarge' shape="circle" /> 
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-800">{userProfile.name}</h2>
-                                        <p className="text-sm text-gray-600">Miembro desde {userProfile.memberSince}</p>
-                                    </div>
-                                </div>
-                                <Divider />
-                                <div className="space-y-2">
-                                    {profileSections.map((s) => (
-                                        <button 
-                                            key={s.id}
-                                            onClick={() => setActiveSection(s.id)} 
-                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${activeSection === s.id ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
-                                        }`}>
-                                            <i className={s.icon}></i>
-                                            <span className="font-semibold">{s.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </Card>
+                        <CardHeader 
+                            userProfile={userProfile} 
+                            memberSince={""} 
+                            setActiveSection={setActiveSection} 
+                            activeSection={activeSection} 
+                            profileSections={profileSections}  
+                            isLoading={(!Section && !isSuccess)}
+                        />
                     </div>
 
                     <div className="lg:col-span-2">
-                        {Section && <Section {...sectionProps[activeSection as keyof profileSectionsProps]} />}
+                        {((Section && isSuccess)) ? <Section {...sectionProps[activeSection as keyof profileSectionsProps]} /> : <ProfileSectionSkeleton />}
                     </div>
                 </div>
             </div>
@@ -230,7 +198,7 @@ export default function UserProfile() {
                 onClose={() => setEditProfileVisible(false)} 
                 editForm={editForm} 
                 handleSubmit={handleEditProfile}
-                updateField={(field: keyof UserProfile, value: string) => setEditForm(prev => ({ ...prev, [field]: value }))}            
+                updateField={(field: keyof Client, value: string) => setEditForm(prev => ({ ...prev, [field]: value }))}            
             />
             <AddressPutDialog 
                 title={editingAddress ? "Editar Dirección" : "Agregar Dirección"} 
@@ -238,7 +206,7 @@ export default function UserProfile() {
                 isOpen={addAddressVisible} 
                 onClose={() => { setAddAddressVisible(false); setEditingAddress(null) }} 
                 address={newAddress} 
-                updateField={(field: keyof Address, value: string) => setNewAddress(prev => ({...prev, [field]: value }))} 
+                updateField={(field: keyof Address, value: Address[typeof field]) => setNewAddress(prev => ({...prev, [field]: value }))} 
                 handleSubmit={handleAddAddress}            
             />
         </div>

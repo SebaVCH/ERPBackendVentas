@@ -1,15 +1,15 @@
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import type { UserProfile } from "../../Profile";
+import type { Client } from "../../../types/Client";
 
 
 
 type EditProfileDialogProps = {
     isOpen : boolean
     onClose: () => void
-    editForm : UserProfile
-    updateField: (field: keyof UserProfile, value: string) => void
+    editForm : Client
+    updateField: (field: keyof Client, value: string) => void
     handleSubmit : () => void
 }
 
@@ -29,8 +29,8 @@ export default function EditProfileDialog({ isOpen, onClose, editForm, updateFie
                     </label>
                     <InputText
                         id="edit-name"
-                        value={editForm.name}
-                        onChange={(e) => updateField("name", e.target.value)}
+                        value={editForm.firstName}
+                        onChange={(e) => updateField("firstName", e.target.value)}
                     />
                 </div>
                 <div className="flex flex-col gap-2">

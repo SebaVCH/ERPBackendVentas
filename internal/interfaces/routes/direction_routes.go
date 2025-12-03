@@ -14,7 +14,7 @@ func SetupDirectionRoutes(rg *gin.Engine) {
 
 	rg.POST("/directions", directionController.CreateDirection)
 	rg.GET("/directions", directionController.GetDirections)
-	rg.GET("/clientes/:id/directions", directionController.GetDirectionsByClientID)
+	rg.GET("/clientes/:id/directions", directionController.GetDirectionsByClientID) // id -> id_cliente
 	rg.PUT("/directions/:id", directionController.UpdateDirection)
 	rg.DELETE("/directions/:id", directionController.DeleteDirection)
 }

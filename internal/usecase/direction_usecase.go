@@ -143,7 +143,7 @@ func (u *directionUsecase) UpdateDirection(ctx *gin.Context) error {
 	if err != nil {
 		respondJSON(ctx, http.StatusBadRequest, APIResponse{
 			Success: false,
-			Message: "id_cliente inválido",
+			Message: "id de la dirección inválido",
 			Error:   "se requiere un id_numérico mayor a 0"})
 		return err
 	}

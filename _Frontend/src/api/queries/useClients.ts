@@ -24,6 +24,6 @@ export function useClientAddress(clientID : number) {
     return useQuery({
         queryKey: ['address_client', clientID],
         queryFn: () => getAddressByClient(clientID),
-        enabled: !!clientID
+        enabled: !!clientID,
     })
 }

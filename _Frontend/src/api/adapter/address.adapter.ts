@@ -11,6 +11,7 @@ export type AddressResponse = {
     comuna: string
     codigo_postal: string
     etiqueta: string
+    default: boolean
 }
 
 export type AddressRequest = Address
@@ -18,7 +19,7 @@ export type AddressRequest = Address
 
 export function adaptAddressResponse( res : AddressResponse ) : Address {
     return {
-        id: res.id_cliente,
+        id: res.id_direccion,
         clientID: res.id_cliente,
         street: res.direccion,
         number: res.numero,
@@ -26,7 +27,8 @@ export function adaptAddressResponse( res : AddressResponse ) : Address {
         region: res.region,
         commune: res.comuna,
         postalCode: res.codigo_postal,
-        label: res.etiqueta
+        label: res.etiqueta,
+        isDefault: res.default
     }
 }
 
@@ -40,6 +42,7 @@ export function adaptAddressRequest( req : AddressRequest ) : AddressResponse {
         comuna: req.commune,
         codigo_postal: req.postalCode,
         etiqueta: req.label,
-        region: req.region
+        region: req.region,
+        default: req.isDefault
     }
 }

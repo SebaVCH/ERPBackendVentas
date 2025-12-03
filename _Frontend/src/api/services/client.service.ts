@@ -10,7 +10,7 @@ import { axiosInstance } from "./axiosInstance";
 
 
 
-const RESOURCE_NAME = 'clientes' // o clients no me acuerdo xd
+const RESOURCE_NAME = 'clientes'
 const RESOURCE_DIRECTION_NAME = 'directions'
 
 
@@ -29,6 +29,7 @@ export async function getClientByID( clientID : number ): Promise<Client> {
 
 export async function getAddressByClient(id : number) : Promise<Address[]> {
     const { data } = await axiosInstance.get(`/${RESOURCE_NAME}/${id}/${RESOURCE_DIRECTION_NAME}`)
+    console.log(data)
     const res = (data?.data as AddressResponse[]).map((a) => adaptAddressResponse(a))
     return res
 }

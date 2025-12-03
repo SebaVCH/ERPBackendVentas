@@ -2,7 +2,7 @@ import { Card } from "primereact/card"
 import { Button } from "primereact/button"
 import type { Address } from "../../../types/Address"
 import AddressPutDialog from "../components/AddressDialog"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useDeleteAddress, useSubmitAddress } from "../../../api/queries/useAddress"
 
 
@@ -27,12 +27,22 @@ const initAddressForm : Address = {
 
 export default function AddressSection({ addresses, clientID } : AddressSectionProps) {
     
-    const [visible, setVisible] = useState(false);
-    const [editing, setEditing] = useState<Address | null>(null);
-    const [form, setForm] = useState<Address>(initAddressForm);
+    const [visible, setVisible] = useState(false)
+    const [editing, setEditing] = useState<Address | null>(null)
+    const [form, setForm] = useState<Address>(initAddressForm)
 
-    const { submit: submitAddress } = useSubmitAddress();
-    const { mutate: removeAddress } = useDeleteAddress();
+    const { submit: submitAddress } = useSubmitAddress()
+    const { mutate: removeAddress } = useDeleteAddress()
+
+    const sortedAddresses = useMemo(
+        () =>
+            addresses
+                ? [...addresses].sort((a, b) =>
+                    (a?.label ?? "").localeCompare(b?.label ?? "")
+                )
+                : [],
+        [addresses]
+    )
 
     const handleOpenNew = () => {
         setEditing(null);
@@ -75,7 +85,7 @@ export default function AddressSection({ addresses, clientID } : AddressSectionP
                 </div>
 
                 <div className="space-y-4">
-                    {addresses.map((address) => (
+                    {sortedAddresses.map((address) => (
                         <Card key={address.id} className="bg-gray-50! shadow-xs! border! border-gray-200!">
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">

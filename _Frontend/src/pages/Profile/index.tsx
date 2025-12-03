@@ -7,7 +7,7 @@ import AddressSection, { type AddressSectionProps } from "./sections/AddressSect
 import { useClient, useClientAddress } from "../../api/queries/useClients";
 import CardHeader from "./components/CardHeader";
 import { ProfileSectionSkeleton } from "./components/ProfileSectionSkeleton";
-import OrderSection from "./sections/OrderSection";
+import OrderSection, { type OrderSectionProps } from "./sections/OrderSection";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ProfileSection<Props = any> = {
@@ -42,37 +42,30 @@ const profileSections : ProfileSection[] = [
 type profileSectionsProps = {
     perfil: ProfileSectionProps
     direccion: AddressSectionProps
+    pedidos: OrderSectionProps
 }
 
 
 export default function UserProfile() {
 
-    const [activeSection, setActiveSection] = useState("perfil");
-    
+    const [activeSection, setActiveSection] = useState("perfil")
     const { data: userProfile, isSuccess, isLoading } = useClient(1)
     const { data: addresses } = useClientAddress(1)
 
     const Section = useMemo(() => profileSections.find((s) => s.id === activeSection )?.component, [activeSection])
-    const sortedAddresses = useMemo(
-        () =>
-            addresses
-                ? [...addresses].sort((a, b) =>
-                    (a?.label ?? "").localeCompare(b?.label ?? "")
-                )
-                : [],
-        [addresses]
-    )
-
+    
     const sectionProps : profileSectionsProps = {
         perfil: {
             userProfile: userProfile,
             isLoading: isLoading
         },
         direccion: {
-            addresses: sortedAddresses,
+            addresses: addresses ?? [],
             clientID: 1
         },
-        
+        pedidos: {
+            clientID: 1
+        }
     }
 
     return (

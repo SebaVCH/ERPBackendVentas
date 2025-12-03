@@ -16,7 +16,7 @@ export function useClient(clientID : number) {
     return useQuery({
         queryKey: ['client', clientID],
         queryFn: () => getClientByID(clientID),
-        enabled: !!clientID
+        enabled: !!clientID,
     })
 }
 

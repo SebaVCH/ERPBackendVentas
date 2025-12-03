@@ -6,6 +6,7 @@ import Footer from './components/Footer'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Cart from './pages/Cart'
+import UserProfile from './pages/Profile'
 
 
 const MainLayout = () => {
@@ -32,6 +33,7 @@ export default function App() {
                 <Route element={<MainLayout />}>
                     <Route path='/' element={<Home />} />
                     <Route path='/mi-carrito' element={<Cart />} />
+                    <Route path='/mi-perfil' element={<UserProfile />} />
                 </Route>
     
             </Routes>

@@ -1,5 +1,6 @@
 import type { Client } from "../../types/Client";
-import { axiosInstance } from "./AxiosInstance";
+import { axiosInstance } from "./axiosInstance";
+
 
 
 // services/ -> los recursos/elementos que se conectando con el backend

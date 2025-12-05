@@ -8,6 +8,8 @@ import Register from './pages/Register'
 import Cart from './pages/Cart'
 import UserProfile from './pages/Profile'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import SuccessPayment from './pages/Payment/SuccessPayment'
+import FailrutePayment from './pages/Payment/FailrutePayment'
 
 const MainLayout = () => {
     return (
@@ -36,6 +38,8 @@ export default function App() {
                         <Route path='/' element={<Home />} />
                         <Route path='/mi-carrito' element={<Cart />} />
                         <Route path='/mi-perfil' element={<UserProfile />} />
+                        <Route path='/payment/success' element={<SuccessPayment />} />
+                        <Route path='/payment/failure' element={<FailrutePayment />} />
                     </Route>
         
                 </Routes>

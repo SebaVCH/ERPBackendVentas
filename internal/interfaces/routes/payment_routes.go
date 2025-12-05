@@ -22,11 +22,13 @@ func GetDefault(c *gin.Context) {
 
 func SetupPaymentRoutes(rg *gin.Engine) {
 	payRepo := repository.NewPaymentRepository()
-	payUsecase := usecase.NewPaymentUsecase(payRepo)
+	cartRepo := repository.NewCartRepository()
+	saleRepo := repository.NewSaleRepository()
+	payUsecase := usecase.NewPaymentUsecase(payRepo, cartRepo, saleRepo)
 	payController := controller.NewPaymentController(payUsecase)
 
 	rg.POST("/payments/checkout", payController.CreateCheckout)
-	rg.GET("/payments/success", GetDefault)
-    rg.GET("/payments/pending", GetDefault)
-    rg.GET("/payments/failure", GetDefault)
+	rg.GET("/payments/success", payController.PaymentSuccess)
+	rg.GET("/payments/pending", payController.PaymentPending)
+	rg.GET("/payments/failure", payController.PaymentFailure)
 }

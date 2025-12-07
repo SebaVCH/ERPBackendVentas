@@ -155,9 +155,9 @@ func (pu *paymentUsecase) PaymentSuccessHandler(c *gin.Context) {
 		detalles = append(detalles, domain.DetalleVenta{
 			IDProducto: it.IDProducto,
 			Cantidad:   it.Cantidad,
-			PrecioUnit: it.PrecioUnit,
+			PrecioVenta: it.PrecioVenta,
 		})
-		total += float64(it.Cantidad) * it.PrecioUnit
+		total += float64(it.Cantidad) * it.PrecioVenta
 	}
 
 	venta := domain.Venta{

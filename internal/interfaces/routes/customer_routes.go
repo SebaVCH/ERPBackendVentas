@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupCustomerRoutes(r *gin.Engine) {
+func SetupCustomerRoutes(r *gin.Engine, protected *gin.RouterGroup) {
 	customerRepo := repository.NewCustomerRepository()
 	salesRepo := repository.NewSaleRepository()
 	cartRepo := repository.NewCartRepository()

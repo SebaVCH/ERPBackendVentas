@@ -8,8 +8,9 @@ import (
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	router.Use(middleware.CORSMiddleware())
-
-	SetupCustomerRoutes(router)
+	protected := router.Group("")
+	protected.Use(middleware.JWTMiddleware())
+	SetupCustomerRoutes(router,protected)
 	SetupSaleRoutes(router)
 	SetupCartRoutes(router)
 	SetupDirectionRoutes(router)

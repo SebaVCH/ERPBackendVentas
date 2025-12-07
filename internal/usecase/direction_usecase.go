@@ -12,6 +12,7 @@ import (
 type DirectionUsecase interface {
 	CreateDirection(ctx *gin.Context) error
 	GetDirections(ctx *gin.Context) ([]domain.Direccion, error)
+	GetDirectionByID(ctx *gin.Context) error
 	GetDirectionsByClientID(ctx *gin.Context) ([]domain.Direccion, error)
 	UpdateDirection(ctx *gin.Context) error
 	DeleteDirection(ctx *gin.Context) error
@@ -20,7 +21,6 @@ type DirectionUsecase interface {
 type directionUsecase struct {
 	directionRepo repository.DirectionRepository
 }
-
 
 func NewDirectionUsecase(directionRepo repository.DirectionRepository) DirectionUsecase {
 	return &directionUsecase{
@@ -174,11 +174,10 @@ func (u *directionUsecase) UpdateDirection(ctx *gin.Context) error {
 		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
 			Success: false,
 			Message: "Error interno",
-			Error: err.Error(),
+			Error:   err.Error(),
 		})
 		return err
 	}
-
 
 	respondJSON(ctx, http.StatusOK, APIResponse{
 		Success: true,
@@ -189,7 +188,6 @@ func (u *directionUsecase) UpdateDirection(ctx *gin.Context) error {
 	return nil
 
 }
-
 
 func (u *directionUsecase) DeleteDirection(ctx *gin.Context) error {
 	idStr := ctx.Param("id")
@@ -205,7 +203,7 @@ func (u *directionUsecase) DeleteDirection(ctx *gin.Context) error {
 		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
 			Success: false,
 			Message: "Error interno",
-			Error: err.Error(),
+			Error:   err.Error(),
 		})
 		return err
 	}
@@ -213,7 +211,35 @@ func (u *directionUsecase) DeleteDirection(ctx *gin.Context) error {
 	respondJSON(ctx, http.StatusOK, APIResponse{
 		Success: true,
 		Message: "Dirección Eliminado Correctamente",
-		Data: "Eliminado Correctamente",
+		Data:    "Eliminado Correctamente",
+	})
+	return nil
+}
+
+func (u *directionUsecase) GetDirectionByID(ctx *gin.Context) error {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "id_dirección inválido",
+			Error:   "se requiere un id_numérico mayor a 0"})
+		return err
+	}
+
+	direction, err := u.directionRepo.GetDirectionByID(id)
+	if err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "Error del servidor",
+			Error:   err.Error()})
+		return err
+	}
+
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "OK",
+		Data:    direction,
 	})
 	return nil
 }

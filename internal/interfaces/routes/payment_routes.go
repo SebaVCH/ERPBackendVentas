@@ -1,16 +1,34 @@
 package routes
 
 import (
-    "github.com/SebaVCH/ERPBackendVentas/internal/interfaces/controller"
-    "github.com/SebaVCH/ERPBackendVentas/internal/repository"
-    "github.com/SebaVCH/ERPBackendVentas/internal/usecase"
-    "github.com/gin-gonic/gin"
+	"encoding/json"
+	"net/http"
+
+	"github.com/SebaVCH/ERPBackendVentas/internal/interfaces/controller"
+	"github.com/SebaVCH/ERPBackendVentas/internal/repository"
+	"github.com/SebaVCH/ERPBackendVentas/internal/usecase"
+	"github.com/gin-gonic/gin"
 )
 
-func SetupPaymentRoutes(rg *gin.Engine) {
-    payRepo := repository.NewPaymentRepository()
-    payUsecase := usecase.NewPaymentUsecase(payRepo)
-    payController := controller.NewPaymentController(payUsecase)
+func GetDefault(c *gin.Context) {
+	jsonData := []byte(`{"msg":"this worked"}`)
 
-    rg.POST("/payments/checkout", payController.CreateCheckout)
+	var v interface{}
+	json.Unmarshal(jsonData, &v)
+	data := v.(map[string]interface{})
+
+	c.JSON(http.StatusOK, data)
+}
+
+func SetupPaymentRoutes(rg *gin.Engine) {
+	payRepo := repository.NewPaymentRepository()
+	cartRepo := repository.NewCartRepository()
+	saleRepo := repository.NewSaleRepository()
+	payUsecase := usecase.NewPaymentUsecase(payRepo, cartRepo, saleRepo)
+	payController := controller.NewPaymentController(payUsecase)
+
+	rg.POST("/payments/checkout", payController.CreateCheckout)
+	rg.GET("/payments/success", payController.PaymentSuccess)
+	rg.GET("/payments/pending", payController.PaymentPending)
+	rg.GET("/payments/failure", payController.PaymentFailure)
 }

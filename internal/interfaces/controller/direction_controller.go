@@ -23,6 +23,10 @@ func (dc *DirectionController) GetDirections(c *gin.Context) {
 	dc.DirectionUsecase.GetDirections(c)
 }
 
+func (dc *DirectionController) GetDirectionByID(c *gin.Context) {
+	dc.DirectionUsecase.GetDirectionByID(c)
+}
+
 func (dc *DirectionController) GetDirectionsByClientID(c *gin.Context) {
 	dc.DirectionUsecase.GetDirectionsByClientID(c)
 }

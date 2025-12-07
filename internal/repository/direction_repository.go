@@ -8,6 +8,7 @@ import (
 
 type DirectionRepository interface {
 	GetDirections() ([]domain.Direccion, error)
+	GetDirectionByID(directionID int) (*domain.Direccion, error)
 	CreateDirection(direccion *domain.Direccion) error
 	GetDirectionsByClientID(clientID int) (direcciones []domain.Direccion, err error)
 	UpdateDirection(directionID int, direction *domain.Direccion) error
@@ -82,4 +83,13 @@ func (r *directionRepository) DeleteDirection(directionID int) error {
 		return gorm.ErrRecordNotFound
 	}
 	return result.Error
+}
+
+
+
+func (r *directionRepository) GetDirectionByID(directionID int) ( direction *domain.Direccion, err error) {
+	if err := r.db.First(&direction, directionID).Error; err != nil {
+		return nil, err
+	}
+	return direction, nil
 }

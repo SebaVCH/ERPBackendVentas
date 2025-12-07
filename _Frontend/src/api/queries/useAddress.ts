@@ -1,8 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Address } from "../../types/Address";
-import { createAddress, deleteAddress, updateAddress } from "../services/address.service";
+import { createAddress, deleteAddress, getAddressByID, updateAddress } from "../services/address.service";
 
 
+
+export function useAddressByID( addressID : number) {
+    return useQuery({
+        queryKey: ['address', addressID],
+        queryFn: () => getAddressByID(addressID),
+        enabled: !!addressID
+    })
+}
 
 export function useUpdateAddress() {
     const queryClients = useQueryClient()

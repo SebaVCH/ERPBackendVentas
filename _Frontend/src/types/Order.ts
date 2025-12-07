@@ -6,7 +6,7 @@ export type Order = {
     clientID: number
     cartID: number 
     AddressID: number
-    orderDate: string
+    orderDate: Date
     total: number
     state: string
     paymentMethod: string

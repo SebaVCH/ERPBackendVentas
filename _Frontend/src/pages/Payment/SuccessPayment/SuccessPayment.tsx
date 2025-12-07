@@ -2,55 +2,65 @@ import { OrderItemsList } from "./Components/OrderItemsList";
 import { OrderPriceSummary } from "./Components/OrderPriceSummary";
 import { OrderSummaryCards } from "./Components/OrderSummaryCards";
 import { SuccessHeader } from "./Components/SuccessHeader";
-import { OrderAdditionalInfo } from "./Components/OrderAdditionalInfo";
 import { LoadingState } from "../../../components/LoadingState";
 import { ErrorState } from "../../../components/ErrorState";
 import { useOrderDetail } from "../../../api/queries/useOrder";
-
+import { useAddressByID } from "../../../api/queries/useAddress";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useMemo } from "react";
+import { AdditionalInfo } from "../../../components/AditionalInfo";
 
 export default function SuccessPayment() {
-    const searchParams = new URLSearchParams(window.location.search);
-    const orderId = searchParams.get("order_id") || "0";
-
-    const { data: orderDetail, error, isLoading, isSuccess } = useOrderDetail(Number(orderId))
+    const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const orderIdParam = searchParams.get("order_id")
+    const orderId = Number(orderIdParam)
     
-    const calculateSubtotal = () => {
-        if(!orderDetail) return 0
-        return orderDetail.orderItems.reduce((sum, item) => 
-            sum + (item.unitPrice * item.amount), 0
-        )
-    }
+    const { data: orderDetail, error: orderError, isLoading: orderLoading, isSuccess: orderSuccess } = useOrderDetail(orderId)
+    const addressID = orderDetail?.order.AddressID ?? 0
+    
+    const { data: address, isLoading: addressLoading } = useAddressByID(addressID)
+    const deliveryAddress = address ? `${address.street} ${address.number}` : "Dirección no disponible"
+    
+    const { subtotal, iva, total } = useMemo(() => {
+        if (!orderDetail) 
+            return { subtotal: 0, iva: 0, total: 0 }
+
+        const subtotalCalc = orderDetail.orderItems.reduce((sum, item) => sum + item.unitPrice * item.amount, 0)
+        return {
+            subtotal: subtotalCalc,
+            iva: subtotalCalc * 0.19,
+            total: subtotalCalc * 1.19
+        }
+    }, [orderDetail])
 
 
-    const subtotal = calculateSubtotal();
-    const iva = subtotal * 0.19;
-    const total = subtotal + iva;
-
-
-    if (isLoading) {
-        return <LoadingState message="Cargando información de tu orden..." />;
-    }
-
-    if(!isSuccess) {
-        return <ErrorState title="Error al buscar el pedido" message="No pudimos cargar la información del pedido. Por favor intentelo más tarde" />
-    }
-
-    if (error || !orderId) {
-        return <ErrorState title={"Orden no encontrada"} message={"No pudimos cargar la información de tu orden. Por favor, verifica el enlace."} />;
-    }
-
+    if (!orderIdParam || isNaN(orderId) || orderId <= 0) 
+        return <ErrorState title="Orden no válida" message="El enlace de la orden es incorrecto o está incompleto." />
+    
+    if (orderLoading || addressLoading) 
+        return <LoadingState message="Cargando información de tu orden..." />
+    
+    if (!orderSuccess || orderError) 
+        return <ErrorState title="Error al cargar la orden" message="No pudimos obtener la información del pedido. Intenta nuevamente más tarde." />
+    
     return (
         <div className="min-h-screen bg-linear-to-br from-gray-50 via-gray-200 to-gray-50 py-8 px-4">
             <div className="max-w-4xl mx-auto">
 
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
                     <SuccessHeader />
-                    <OrderSummaryCards orderId={orderId} status={"Pagado"} date={(new Date()).toLocaleDateString('CL')} deliveryAddress={"AV. Aguirre 666"} />
+                    <OrderSummaryCards
+                        orderId={String(orderId)}
+                        status="Pagado"
+                        date={orderDetail.order.orderDate.toLocaleDateString("es-CL")}
+                        deliveryAddress={deliveryAddress}
+                    />
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <OrderItemsList items={orderDetail?.orderItems} />
+                        <OrderItemsList items={orderDetail.orderItems} />
                     </div>
 
                     <div className="lg:col-span-1">
@@ -58,14 +68,17 @@ export default function SuccessPayment() {
                             subtotal={subtotal}
                             iva={iva}
                             total={total}
-                            onDownloadInvoice={() => console.log('Download invoice')}
-                            onViewOrders={() => window.location.href = '/orders'}
-                            onGoHome={() => window.location.href = '/'}
+                            onViewOrders={() => navigate('/mi-perfil')}
+                            onGoHome={() => navigate('/')}
                         />
-                        <OrderAdditionalInfo />
+                        <AdditionalInfo 
+                            title="¿Qué sigue?"
+                            message="Te enviaremos un correo con los detalles de tu compra y el seguimiento de tu pedido."
+                            icon="pi-info-circle"
+                        />
                     </div>
                 </div>
             </div>
         </div>
-    );
+    )
 }

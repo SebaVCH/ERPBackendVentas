@@ -26,7 +26,7 @@ export function OrderSummaryCards({ orderId, status, date, deliveryAddress } : O
                 />
                 <InfoCard 
                     icon="pi pi-calendar" 
-                    label="Fecha" 
+                    label="Fecha Creación" 
                     value={date} 
                     iconColor="text-purple-600" 
                     iconBgColor="bg-purple-100"

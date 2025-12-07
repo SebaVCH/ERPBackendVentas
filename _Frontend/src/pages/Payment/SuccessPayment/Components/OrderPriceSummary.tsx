@@ -6,7 +6,6 @@ interface OrderPriceSummaryProps {
     subtotal: number;
     iva: number;
     total: number;
-    onDownloadInvoice?: () => void;
     onViewOrders?: () => void;
     onGoHome?: () => void;
 }
@@ -15,7 +14,6 @@ export function OrderPriceSummary({
     subtotal, 
     iva, 
     total,
-    onDownloadInvoice,
     onViewOrders,
     onGoHome
 }: OrderPriceSummaryProps) {
@@ -56,16 +54,7 @@ export function OrderPriceSummary({
 
                 <Divider />
 
-                <div className="flex flex-col space-y-3 gap-2">
-                    <Button
-                        label="Descargar factura"
-                        icon="pi pi-download"
-                        className="w-full"
-                        severity="contrast"
-                        outlined
-                        onClick={onDownloadInvoice}
-                    />
-                    
+                <div className="flex flex-col space-y-3 gap-2">                    
                     <Button
                         label="Ver mis pedidos"
                         icon="pi pi-list"
@@ -74,7 +63,6 @@ export function OrderPriceSummary({
                         outlined
                         onClick={onViewOrders}
                     />
-
                     <Button
                         label="Volver al inicio"
                         icon="pi pi-home"

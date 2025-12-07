@@ -8,7 +8,7 @@ import Register from './pages/Register'
 import Cart from './pages/Cart'
 import UserProfile from './pages/Profile'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import FailurePayment from './pages/Payment/FailurePayment'
+import FailurePayment from './pages/Payment/FailrutePayment/FailurePayment'
 import SuccessPayment from './pages/Payment/SuccessPayment/SuccessPayment'
 
 

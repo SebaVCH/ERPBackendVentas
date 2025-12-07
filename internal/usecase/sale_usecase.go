@@ -78,11 +78,11 @@ func (u *saleUsecase) CreateSale(ctx *gin.Context) {
 	var total float64
 	for _, it := range items {
 		detalles = append(detalles, domain.DetalleVenta{
-			IDProducto: it.IDProducto,
-			Cantidad:   it.Cantidad,
-			PrecioUnit: it.PrecioUnit,
+			IDProducto:  it.IDProducto,
+			Cantidad:    it.Cantidad,
+			PrecioVenta: it.PrecioVenta,
 		})
-		total += float64(it.Cantidad) * it.PrecioUnit
+		total += float64(it.Cantidad) * it.PrecioVenta
 	}
 
 	venta := domain.Venta{
@@ -167,7 +167,6 @@ func (su *saleUsecase) GetSale(c *gin.Context) {
 	})
 }
 
-
 // GetSalesDetails implements SaleUsecase.
 func (u *saleUsecase) GetSalesDetails(c *gin.Context) {
 	idParam := c.Param("id")
@@ -185,14 +184,14 @@ func (u *saleUsecase) GetSalesDetails(c *gin.Context) {
 		respondJSON(c, http.StatusInternalServerError, APIResponse{
 			Success: false,
 			Message: "error a obtener detalles ventas",
-			Error: err.Error(),
+			Error:   err.Error(),
 		})
-		return 
+		return
 	}
 
 	respondJSON(c, http.StatusOK, APIResponse{
 		Success: true,
 		Message: "OK",
-		Data: detallesVenta,
+		Data:    detallesVenta,
 	})
 }

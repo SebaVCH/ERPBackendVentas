@@ -31,10 +31,10 @@ func NewCartUseCase(cartRepo repository.CartRepository) CartUseCase {
 }
 
 type GeneralCartItemRequest struct {
-	IDCliente  int     `json:"id_cliente"`
-	IDProducto int     `json:"id_producto"`
-	Cantidad   int     `json:"cantidad"`
-	PrecioUnit float64 `json:"precio_unitario"`
+	IDCliente   int     `json:"id_cliente"`
+	IDProducto  int     `json:"id_producto"`
+	Cantidad    int     `json:"cantidad"`
+	PrecioVenta float64 `json:"precio_venta"`
 }
 
 type CreateCartRequest struct {
@@ -49,7 +49,7 @@ type APIResponse struct {
 }
 
 type ReserveStockRequest struct {
-	IDCliente    int `json:"id_cliente"`
+	IDCliente int `json:"id_cliente"`
 }
 
 // Esto lo cree para tener un formato de respuesta uniforme
@@ -222,11 +222,11 @@ func (c *cartUseCase) VerifyCartItems(ctx *gin.Context) (domain.CarritoProducto,
 		return domain.CarritoProducto{}, 0, errors.New("request invalido")
 	}
 
-	if req.IDCliente <= 0 || req.IDProducto <= 0 || req.Cantidad <= 0 || req.PrecioUnit <= 0 {
+	if req.IDCliente <= 0 || req.IDProducto <= 0 || req.Cantidad <= 0 || req.PrecioVenta <= 0 {
 		respondJSON(ctx, http.StatusBadRequest, APIResponse{
 			Success: false,
 			Message: "datos del producto invalidos",
-			Error:   "IDProducto, IDCliente, Cantidad y PrecioUnit deben ser mayores a 0",
+			Error:   "IDProducto, IDCliente, Cantidad y PrecioVenta deben ser mayores a 0",
 		})
 		return domain.CarritoProducto{}, 0, errors.New("datos del producto invalidos")
 	}
@@ -243,10 +243,10 @@ func (c *cartUseCase) VerifyCartItems(ctx *gin.Context) (domain.CarritoProducto,
 	}
 
 	cartProduct := domain.CarritoProducto{
-		IDCart:     cart.IDCart,
-		IDProducto: req.IDProducto,
-		Cantidad:   req.Cantidad,
-		PrecioUnit: req.PrecioUnit,
+		IDCart:      cart.IDCart,
+		IDProducto:  req.IDProducto,
+		Cantidad:    req.Cantidad,
+		PrecioVenta: req.PrecioVenta,
 	}
 
 	return cartProduct, req.IDCliente, nil

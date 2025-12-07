@@ -28,10 +28,10 @@ type Boleta struct {
 }
 
 type Item struct {
-	Descripcion    string
-	Cantidad       int
-	PrecioUnitario string
-	Total          string
+	Descripcion string
+	Cantidad    int
+	PrecioVenta string
+	Total       string
 }
 
 type Resumen struct {
@@ -58,8 +58,8 @@ func InvoiceTemplateHTML(invoice BoletaData) (string, error) {
 
 	var body bytes.Buffer
 	if err := HTMLLoad.Execute(&body, invoice); err != nil {
-		return "", err 
+		return "", err
 	}
-	
+
 	return body.String(), nil
 }

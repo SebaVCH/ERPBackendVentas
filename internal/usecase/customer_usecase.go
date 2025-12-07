@@ -170,10 +170,10 @@ func (cu *customerUseCase) SendEmail(ctx *gin.Context) {
 		var items []templates.Item
 		for _, detalle := range detallesVentas {
 			item := templates.Item{
-				Descripcion:    detalle.Producto.Nombre,
-				Cantidad:       detalle.Cantidad,
-				PrecioUnitario: strconv.FormatFloat(detalle.PrecioUnit, 'f', -1, 64),
-				Total:          strconv.FormatFloat(detalle.PrecioUnit*(float64(detalle.Cantidad)), 'f', -1, 64),
+				Descripcion: detalle.Producto.Nombre,
+				Cantidad:    detalle.Cantidad,
+				PrecioVenta: strconv.FormatFloat(detalle.PrecioVenta, 'f', -1, 64),
+				Total:       strconv.FormatFloat(detalle.PrecioVenta*(float64(detalle.Cantidad)), 'f', -1, 64),
 			}
 			items = append(items, item)
 		}

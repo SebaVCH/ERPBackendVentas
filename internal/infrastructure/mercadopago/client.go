@@ -25,14 +25,13 @@ func NewClientFromEnv() *Client {
 	}
 }
 
-// BackUrls estructura para las URLs de retorno
+
 type BackUrls struct {
 	Success string `json:"success"`
 	Failure string `json:"failure"`
 	Pending string `json:"pending"`
 }
 
-// PreferenceRequest payload completo para Mercado Pago preference
 type PreferenceRequest struct {
 	Items             []PreferenceItem `json:"items"`
 	ExternalReference string           `json:"external_reference,omitempty"`
@@ -82,7 +81,6 @@ func (c *Client) CreatePreference(amount float64, title, externalRef string, exp
 			CurrencyId: "CLP",
 		}},
 		ExternalReference: externalRef,
-		AutoReturn:        "approved",
 		BackUrls: &BackUrls{
 			Success: backURL + "/payments/success",
 			Failure: backURL + "/payments/failure",

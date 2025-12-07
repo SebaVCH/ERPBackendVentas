@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,14 +23,14 @@ type PaymentUsecase interface {
 type paymentUsecase struct {
 	PayRepo  repository.PaymentRepository
 	CartRepo repository.CartRepository
-    SaleRepo repository.SaleRepository
+	SaleRepo repository.SaleRepository
 }
 
 func NewPaymentUsecase(payRepo repository.PaymentRepository, cartRepo repository.CartRepository, saleRepo repository.SaleRepository) PaymentUsecase {
 	return &paymentUsecase{
 		PayRepo:  payRepo,
 		CartRepo: cartRepo,
-        SaleRepo: saleRepo,
+		SaleRepo: saleRepo,
 	}
 }
 
@@ -47,7 +48,7 @@ func (pu *paymentUsecase) CreateCheckout(c *gin.Context) {
 		return
 	}
 
-    // IMPORTANTE-VALIDAR ID_DIRECCION DEL CLIENTE
+	// IMPORTANTE-VALIDAR ID_DIRECCION DEL CLIENTE
 
 	// Hacer la reserva de los productos
 	if err := pu.CartRepo.ReserveSaleStock(req.IDCliente); err != nil {
@@ -58,8 +59,8 @@ func (pu *paymentUsecase) CreateCheckout(c *gin.Context) {
 		})
 		return
 	}
-    
-    // id_cliente,id_direccion
+
+	// id_cliente,id_direccion
 	externalRef := strconv.FormatInt(int64(req.IDCliente), 10) + "," + strconv.FormatInt(int64(req.IDDireccion), 10)
 
 	// Crear la preference con expiración corta (5 minutos)
@@ -86,50 +87,49 @@ func (pu *paymentUsecase) PaymentPendingHandler(c *gin.Context) {
 	panic("unimplemented")
 }
 
-func(pu *paymentUsecase) parseExternalRef(externalRef string) (IDCliente int, IDDireccion int, err error) {
-    parts := strings.Split(externalRef, ",")
-    if len(parts) != 2 {
-        return -1, -1, fmt.Errorf("invalid external reference format: %s", externalRef)
-    }
+func (pu *paymentUsecase) parseExternalRef(externalRef string) (IDCliente int, IDDireccion int, err error) {
+	parts := strings.Split(externalRef, ",")
+	if len(parts) != 2 {
+		return -1, -1, fmt.Errorf("invalid external reference format: %s", externalRef)
+	}
 
-    IDCliente, err = strconv.Atoi(parts[0])
-    if err != nil {
-        return -1, -1, fmt.Errorf("Invalid id_cliente: %", err.Error())
-    } 
+	IDCliente, err = strconv.Atoi(parts[0])
+	if err != nil {
+		return -1, -1, fmt.Errorf("Invalid id_cliente: %", err.Error())
+	}
 
-    IDDireccion, err = strconv.Atoi(parts[1])
-    if err != nil {
-        return -1, -1, fmt.Errorf("Invalid id_direccion: %", err.Error())
-    }
+	IDDireccion, err = strconv.Atoi(parts[1])
+	if err != nil {
+		return -1, -1, fmt.Errorf("Invalid id_direccion: %", err.Error())
+	}
 
-    return IDCliente, IDDireccion, nil
+	return IDCliente, IDDireccion, nil
 }
 
 func (pu *paymentUsecase) PaymentSuccessHandler(c *gin.Context) {
 
+	// paymentID := c.Query("payment_id")
+	status := c.Query("status")
+	externalRef := c.Query("external_reference")
+	collectionStatus := c.Query("collection_status")
+	paymentType := c.Query("payment_type")
 
-    // paymentID := c.Query("payment_id")
-    status := c.Query("status")
-    externalRef := c.Query("external_reference")
-    collectionStatus := c.Query("collection_status")
-    paymentType := c.Query("payment_type")
+	// IMPORTANTE - VERIFICAR PAYMENT_ID
 
-    // IMPORTANTE - VERIFICAR PAYMENT_ID
+	IDCliente, IDDireccion, err := pu.parseExternalRef(externalRef)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "http://localhost:5173/payment/failure")
+		return
+	}
 
-    IDCliente, IDDireccion, err := pu.parseExternalRef(externalRef)
-    if err != nil {
-        c.Redirect(http.StatusSeeOther, "http://localhost:5173/payment/failure")
-        return 
-    }
+	fmt.Printf("ID_CLIENTE: %, ID_DIRECCION: %", IDCliente, IDDireccion)
 
-    fmt.Printf("ID_CLIENTE: %, ID_DIRECCION: %", IDCliente, IDDireccion)
+	if status != "approved" && collectionStatus != "approved" {
+		c.Redirect(http.StatusSeeOther, "http://localhost:5173/payment/failure")
+		return
+	}
 
-    if status != "approved" && collectionStatus != "approved" {
-        c.Redirect(http.StatusSeeOther, "http://localhost:5173/payment/failure")
-        return
-    }
-
-    if IDCliente <= 0 {
+	if IDCliente <= 0 {
 		c.Redirect(http.StatusSeeOther, "http://localhost:5173/payment/failure")
 		return
 	}
@@ -167,12 +167,12 @@ func (pu *paymentUsecase) PaymentSuccessHandler(c *gin.Context) {
 		CondicionesDePago: "Pago Completo",
 	}
 
+	log.Print("PASA POR ACAAAAAAAAAAAAAAA----------------------")
 
 	if err := pu.SaleRepo.CreateSale(&venta, detalles); err != nil {
-        c.Redirect(http.StatusSeeOther, "http://localhost:5173/payment/failure")
+		c.Redirect(http.StatusSeeOther, "http://localhost:5173/payment/failure")
 		return
 	}
-
 
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("http://localhost:5173/payment/success?order_id=%d", venta.IDVenta))
 }

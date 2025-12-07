@@ -2,6 +2,8 @@ import { useState } from "react";
 import { DataView } from "primereact/dataview";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
+import { createCheckout } from "../api/services/payment.service";
+import ConfirmationCheckoutDialog from "./Cart/ConfirmationCheckoutDialog";
 
 interface Product {
     id: string;
@@ -133,6 +135,18 @@ export default function Cart() {
         );
     };
 
+    const [ visible, setVisible ] = useState(false)
+
+    const handleCreateCheckout = async () => {
+        const res = await createCheckout({
+            clientID: 1,
+            addressID: 10,
+            amount: getTotalPrice(),
+            title: "e-commerce"
+        })
+        window.open(res.initPoint, '_self')
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -198,11 +212,17 @@ export default function Cart() {
                                 className="w-full mt-4"
                                 size="large"
                                 disabled={products.length === 0}
+                                onClick={() => setVisible(true)}
                             />
                         </div>
                     </Card>
                 </div>
             </div>
+            <ConfirmationCheckoutDialog 
+                createCheckout={handleCreateCheckout} 
+                isOpen={visible} 
+                onClose={() => setVisible(false)}                
+            />
         </div>
     );
 }

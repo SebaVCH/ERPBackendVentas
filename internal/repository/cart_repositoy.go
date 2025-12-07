@@ -226,8 +226,8 @@ func (r *cartRepository) AddCartItem(clientID int, cartProduct domain.CarritoPro
 			result := tx.Model(&domain.CarritoProducto{}).
 				Where("id_cart = ? AND id_producto = ?", cartProduct.IDCart, cartProduct.IDProducto).
 				UpdateColumns(map[string]interface{}{
-					"cantidad":        gorm.Expr("cantidad + ?", cartProduct.Cantidad),
-					"precio_unitario": cartProduct.PrecioUnit,
+					"cantidad":     gorm.Expr("cantidad + ?", cartProduct.Cantidad),
+					"precio_venta": cartProduct.PrecioVenta,
 				})
 
 			if result.Error != nil {

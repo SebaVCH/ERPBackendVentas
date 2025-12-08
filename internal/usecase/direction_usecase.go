@@ -16,6 +16,7 @@ type DirectionUsecase interface {
 	GetDirectionsByClientID(ctx *gin.Context) ([]domain.Direccion, error)
 	UpdateDirection(ctx *gin.Context) error
 	DeleteDirection(ctx *gin.Context) error
+	CreateMany(ctx *gin.Context) error
 }
 
 type directionUsecase struct {
@@ -240,6 +241,50 @@ func (u *directionUsecase) GetDirectionByID(ctx *gin.Context) error {
 		Success: true,
 		Message: "OK",
 		Data:    direction,
+	})
+	return nil
+}
+
+func (u *directionUsecase) CreateMany(ctx *gin.Context) error {
+	var req []DirectionRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "request invalido",
+			Error:   err.Error(),
+		})
+		return nil
+	}
+
+	var direcciones []domain.Direccion
+	for _, d := range req {
+		direccion := domain.Direccion{
+			IDCliente:    d.IDCliente,
+			Direccion:    d.Direccion,
+			Numero:       d.Numero,
+			Ciudad:       d.Ciudad,
+			Region:       d.Region,
+			Comuna:       d.Comuna,
+			CodigoPostal: d.CodigoPostal,
+			Etiqueta:     d.Etiqueta,
+		}
+		direcciones = append(direcciones, direccion)
+	}
+
+	err := u.directionRepo.CreateMany(direcciones)
+	if err != nil {
+		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "error al crear las direcciones",
+			Error:   err.Error(),
+		})
+		return err
+	}
+
+	respondJSON(ctx, http.StatusCreated, APIResponse{
+		Success: true,
+		Message: "direcciones creadas exitosamente",
+		Data:    direcciones,
 	})
 	return nil
 }

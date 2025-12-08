@@ -15,6 +15,7 @@ import (
 type AuthClientUsecase interface {
 	Register(c *gin.Context)
 	Login(c *gin.Context)
+	CreateMany(c *gin.Context)
 }
 
 type authClientUsecase struct {
@@ -106,5 +107,30 @@ func (u *authClientUsecase) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "login correcto", "data": token })
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "login correcto", "data": token})
+}
+
+func (u *authClientUsecase) CreateMany(c *gin.Context) {
+	var clientes []domain.Cliente
+	if err := c.ShouldBindJSON(&clientes); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "request inválido", "error": err.Error()})
+		return
+	}
+
+	for i := range clientes {
+		// hash password
+		hash, err := bcrypt.GenerateFromPassword([]byte(clientes[i].PasswordHash), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "error al hashear password", "error": err.Error()})
+			return
+		}
+		clientes[i].PasswordHash = string(hash)
+		clientes[i].CreatedAt = time.Now()
+	}
+	if err := u.Repo.CreateClientes(clientes); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "error creando clientes", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"success": true, "message": "clientes creados correctamente"})
 }

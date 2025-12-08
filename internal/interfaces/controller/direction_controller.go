@@ -35,7 +35,10 @@ func (dc *DirectionController) UpdateDirection(c *gin.Context) {
 	dc.DirectionUsecase.UpdateDirection(c)
 }
 
-
 func (dc *DirectionController) DeleteDirection(c *gin.Context) {
 	dc.DirectionUsecase.DeleteDirection(c)
+}
+
+func (dc *DirectionController) CreateMany(c *gin.Context) {
+	dc.DirectionUsecase.CreateMany(c)
 }

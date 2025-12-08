@@ -29,7 +29,7 @@ export default function CardHeader( {userProfile, memberSince, setActiveSection,
                     { isLodingAndUserProfile ? <Skeleton shape="circle" size="64px"></Skeleton> : <Avatar label={userProfile.firstName.charAt(0)} size='xlarge' shape="circle" /> }
                     <div>
                         { isLodingAndUserProfile ? <Skeleton width="10rem" className="mb-4"></Skeleton> : <h2 className="text-xl font-bold text-gray-800">{userProfile.firstName + " " + userProfile.lastName}</h2> }
-                        { isLodingAndUserProfile ? <Skeleton width="5rem" className="mb-4"></Skeleton>  : <p className="text-sm text-gray-600">Miembro desde {memberSince}</p> }
+                        { isLodingAndUserProfile ? <Skeleton width="5rem" className="mb-4"></Skeleton>  : <p className="text-sm text-gray-600">Miembro desde <b>{memberSince}</b></p> }
                     </div>
                 </div>
                 <Divider />

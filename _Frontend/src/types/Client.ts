@@ -6,4 +6,5 @@ export type Client = {
     phone: string
     state: string
     address: string
+    createdAt: Date
 }

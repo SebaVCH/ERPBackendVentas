@@ -5,6 +5,8 @@ import type { Client } from "../../../types/Client"
 import { Skeleton } from "primereact/skeleton"
 import { useState } from "react"
 import EditProfileDialog from "../components/EditProfileDialog"
+import { useClientID, useUpdateClient } from "../../../api/queries/useClients"
+import type { ClientUpdate } from "../../../api/adapter/client.adapter"
 
 
 
@@ -15,14 +17,13 @@ export type ProfileSectionProps = {
 
 
 
-const initForm : Client = {
+const initForm : ClientUpdate  = {
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     address: "",
     id: 0,
-    state: ""
 } 
 
 
@@ -30,12 +31,22 @@ const initForm : Client = {
 export default function ProfileSection({ userProfile, isLoading } : ProfileSectionProps) {
     
     const [ visible, setVisible ] = useState(false)
-    const [ editProfileForm, setEditProfileForm ] = useState<Client>(initForm)
+    const [ editProfileForm, setEditProfileForm ] = useState<ClientUpdate>(initForm)
+    const clientID = useClientID() as number
+    const { mutate } = useUpdateClient()
     
     
     const handleEditProfile = () => {
-        // setUserProfile(editForm);
-        setVisible(false);
+        
+        mutate({
+            clientID: clientID,
+            uptClient: editProfileForm
+        }, {
+            onSuccess: () => {
+                setVisible(false)
+            }
+        })
+
     };
     
 
@@ -54,7 +65,7 @@ export default function ProfileSection({ userProfile, isLoading } : ProfileSecti
                     { isLoading && !userProfile ? 
                         <Skeleton height="49px" width="100px"></Skeleton> : 
                         <Button
-                            label="Editar - PENDIENTE"
+                            label="Editar"
                             icon="pi pi-pencil"
                             outlined
                             severity="contrast"

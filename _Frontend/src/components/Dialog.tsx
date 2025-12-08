@@ -23,6 +23,7 @@ interface GenericDialogProps {
     dismissableMask?: boolean
     headerClassName?: string
     contentClassName?: string
+    footerClassName?: string
 }
 
 export default function GenericDialog({
@@ -45,7 +46,8 @@ export default function GenericDialog({
     closeOnEscape = true,
     dismissableMask = true,
     headerClassName = "",
-    contentClassName = ""
+    contentClassName = "",
+    footerClassName = "",
 }: GenericDialogProps) {
     
     const handleCancel = () => {
@@ -62,13 +64,14 @@ export default function GenericDialog({
     }
 
     const defaultFooter = (
-        <div className="flex justify-end gap-2">
+        <div className={`flex justify-end gap-2 ${footerClassName}`}>
             <Button
                 label={cancelLabel}
                 icon={cancelIcon}
                 onClick={handleCancel}
                 severity="secondary"
                 outlined
+                className={footerClassName}
             />
             <Button
                 label={confirmLabel}
@@ -76,6 +79,7 @@ export default function GenericDialog({
                 onClick={handleConfirm}
                 severity={confirmSeverity}
                 disabled={confirmDisabled}
+                className={footerClassName}
             />
         </div>
     );

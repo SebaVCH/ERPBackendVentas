@@ -3,13 +3,13 @@ package main
 import (
 	"log/slog"
 	"os"
-	
+
 	"github.com/SebaVCH/ERPBackendVentas/cmd/app"
 	"github.com/SebaVCH/ERPBackendVentas/internal/config"
 	"github.com/SebaVCH/ERPBackendVentas/internal/infrastructure/database"
 	"github.com/SebaVCH/ERPBackendVentas/internal/utils"
+	//"github.com/SebaVCH/ERPBackendVentas/internal/utils"
 )
-
 
 func main() {
 
@@ -38,5 +38,4 @@ func main() {
 
 	slog.Info("Backend iniciado correctamente")
 
-	
 }

@@ -64,7 +64,7 @@ type PreferenceResponse struct {
 	DateOfExpiration string `json:"date_of_expiration"`
 }
 
-func (c *Client) CreatePreference(amount float64, title, externalRef string, expiryMinutes int) (*PreferenceResponse, error) {
+func (c *Client) CreatePreference(amount float64, title, externalRef, customerEmail string, expiryMinutes int) (*PreferenceResponse, error) {
 	if c.AccessToken == "" {
 		return nil, fmt.Errorf("MP access token not provided")
 	}
@@ -87,7 +87,7 @@ func (c *Client) CreatePreference(amount float64, title, externalRef string, exp
 			Pending: backURL + "/payments/pending",
 		},
 		Payer: &Payer{
-			Email: "test_user_123456@testuser.com",
+			Email: customerEmail,
 		},
 	}
 

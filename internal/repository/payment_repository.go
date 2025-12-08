@@ -35,7 +35,7 @@ type PayerInfo struct {
 }
 
 type PaymentRepository interface {
-	CreatePreference(amount float64, title, externalRef string, expiryMinutes int) (initPoint string, preferenceID string, err error)
+	CreatePreference(amount float64, title, externalRef, customerEmail string, expiryMinutes int) (initPoint string, preferenceID string, err error)
 	GetPaymentDetail(paymentID int64) (*PaymentDetail, error)
 }
 
@@ -49,8 +49,8 @@ func NewPaymentRepository() PaymentRepository {
 	}
 }
 
-func (p *paymentRepository) CreatePreference(amount float64, title, externalRef string, expiryMinutes int) (string, string, error) {
-	pr, err := p.mpClient.CreatePreference(amount, title, externalRef, expiryMinutes)
+func (p *paymentRepository) CreatePreference(amount float64, title, externalRef, customerEmail string, expiryMinutes int) (string, string, error) {
+	pr, err := p.mpClient.CreatePreference(amount, title, externalRef, customerEmail, expiryMinutes)
 	if err != nil {
 		return "", "", err
 	}

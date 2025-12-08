@@ -34,6 +34,7 @@ export default function Home() {
     const handleAgregarProductoCarrito = () => {
         if(!clientID) {
             setShowLoginRequired(true)
+            return
         }
         // Manejar Agregar Producto
     }

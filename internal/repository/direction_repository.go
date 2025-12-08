@@ -13,6 +13,7 @@ type DirectionRepository interface {
 	GetDirectionsByClientID(clientID int) (direcciones []domain.Direccion, err error)
 	UpdateDirection(directionID int, direction *domain.Direccion) error
 	DeleteDirection(directionID int) error
+	CreateMany(direcciones []domain.Direccion) error
 }
 
 type directionRepository struct {
@@ -85,11 +86,18 @@ func (r *directionRepository) DeleteDirection(directionID int) error {
 	return result.Error
 }
 
-
-
-func (r *directionRepository) GetDirectionByID(directionID int) ( direction *domain.Direccion, err error) {
+func (r *directionRepository) GetDirectionByID(directionID int) (direction *domain.Direccion, err error) {
 	if err := r.db.First(&direction, directionID).Error; err != nil {
 		return nil, err
 	}
 	return direction, nil
+}
+
+func (r *directionRepository) CreateMany(direcciones []domain.Direccion) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&direcciones).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
 type ApiProduct = {
     id_producto: number
@@ -64,30 +65,19 @@ function ProductCard({ product }: { product: ApiProduct }) {
     )
 }
 
+async function fetchProducts(): Promise<ApiProduct[]> {
+    const res = await fetch('http://localhost:8080/products')
+    if (!res.ok) throw new Error('No se pudo cargar el catálogo')
+    const json = await res.json()
+    return json.data as ApiProduct[]
+}
+
 export default function Products() {
-    const [products, setProducts] = useState<ApiProduct[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
     const { search } = useLocation()
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                setLoading(true)
-                setError(null)
-                const res = await fetch('http://localhost:8080/products')
-                if (!res.ok) throw new Error('No se pudo cargar el catálogo')
-                const json = await res.json()
-                setProducts(json.data as ApiProduct[])
-            } catch (err) {
-                setError((err as Error).message)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        load()
-    }, [])
+    const { data: products = [], isLoading: loading, error } = useQuery<ApiProduct[], Error>({
+        queryKey: ['products'],
+        queryFn: fetchProducts,
+    })
 
     const searchTerm = useMemo(() => {
         const params = new URLSearchParams(search)
@@ -165,7 +155,7 @@ export default function Products() {
 
                     {error && (
                         <div className="mt-6 bg-red-500/10 border border-red-400/40 text-red-200 px-4 py-3 rounded-lg">
-                            Ocurrió un error al cargar los productos: {error}
+                            Ocurrió un error al cargar los productos: {error.message}
                         </div>
                     )}
 

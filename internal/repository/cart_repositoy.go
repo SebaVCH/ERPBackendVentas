@@ -180,7 +180,7 @@ func (r *cartRepository) GetCartItems(userID int) (*domain.Carrito, []domain.Car
 		Where("id_cliente = ? AND estado = ?", userID, false).
 		First(&cart).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil, errors.New("carrito no encontrado para el cliente")
+			return nil, nil, errors.New("CARRITO_NOT_FOUND")
 		}
 		return nil, nil, err
 	}

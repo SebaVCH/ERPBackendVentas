@@ -1,4 +1,4 @@
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import './App.css'
 import Home from './pages/Home'
 import Header from './components/Header'
@@ -10,6 +10,9 @@ import UserProfile from './pages/Profile'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import FailurePayment from './pages/Payment/FailrutePayment/FailurePayment'
 import SuccessPayment from './pages/Payment/SuccessPayment/SuccessPayment'
+import { ProgressSpinner } from 'primereact/progressspinner'
+import { useEffect, useState } from 'react'
+import { useAccessToken } from './stores/useSessionStore'
 
 
 const MainLayout = () => {
@@ -21,6 +24,30 @@ const MainLayout = () => {
             </main>
             <Footer />
         </div>
+    )
+}
+
+function ProtectedRoute() {
+    const accessToken = useAccessToken()    
+
+    const [loading, setLoading] = useState(true)
+    useEffect(() => {
+        const id = setTimeout(() => setLoading(false), 200)
+        return () => clearTimeout(id)
+    }, [])
+    
+    if (loading) {
+        return (
+            <div className="min-w-screen min-h-screen flex items-center justify-center">
+                <ProgressSpinner />
+            </div>
+        );
+    }
+
+    if (!accessToken) return <Navigate to="/login" replace/>
+
+    return (
+        <Outlet />
     )
 }
 
@@ -37,10 +64,14 @@ export default function App() {
 
                     <Route element={<MainLayout />}>
                         <Route path='/' element={<Home />} />
-                        <Route path='/mi-carrito' element={<Cart />} />
-                        <Route path='/mi-perfil' element={<UserProfile />} />
                         <Route path='/payment/success' element={<SuccessPayment />} />
                         <Route path='/payment/failure' element={<FailurePayment />} />
+
+
+                        <Route element={<ProtectedRoute />}>
+                            <Route path='/mi-perfil' element={<UserProfile />} />
+                            <Route path='/mi-carrito' element={<Cart />}/>
+                        </Route>
                     </Route>
         
                 </Routes>

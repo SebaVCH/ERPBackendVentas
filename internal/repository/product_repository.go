@@ -8,6 +8,7 @@ import (
 
 type ProductRepository interface {
 	GetProducts() ([]domain.Producto, error)
+	GetProductsWithExtraDetails() ([]domain.DetallesExtra, error)
 }
 
 type productRepository struct {
@@ -20,10 +21,18 @@ func NewProductRepository() ProductRepository {
 	}
 }
 
-func (p *productRepository) GetProducts() ( products []domain.Producto, err error) {
+func (p *productRepository) GetProducts() (products []domain.Producto, err error) {
 	err = p.db.Find(&products).Error
 	if err != nil {
 		return nil, err
 	}
 	return products, nil
+}
+
+func (p *productRepository) GetProductsWithExtraDetails() (details []domain.DetallesExtra, err error) {
+	err = p.db.Preload("Producto").Find(&details).Error
+	if err != nil {
+		return nil, err
+	}
+	return details, nil
 }

@@ -18,3 +18,7 @@ func NewProductController(productUseCase usecase.ProductUseCase) *ProductControl
 func (cu *ProductController) GetProducts(c *gin.Context) {
 	cu.ProductUseCase.GetProducts(c)
 }
+
+func (cu *ProductController) GetProductsWithExtraDetails(c *gin.Context) {
+	cu.ProductUseCase.GetProductsWithExtraDetails(c)
+}

@@ -13,4 +13,5 @@ func SetupProductRoutes(rg *gin.Engine) {
 	ctrl := controller.NewProductController(uc)
 
 	rg.GET("/products", ctrl.GetProducts)
+	rg.GET("/products/details", ctrl.GetProductsWithExtraDetails)
 }

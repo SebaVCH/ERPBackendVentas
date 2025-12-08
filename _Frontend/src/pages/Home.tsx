@@ -1,14 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-
-type ApiProduct = {
-    id_producto: number
-    nombre: string
-    descripcion: string
-    precio_venta: number
-    estado: boolean
-    cantidad: number
-}
+import { useProducts } from '../api/queries/useProducts'
+import type { Product } from '../types/Product'
 
 const formatCLP = (value: number) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value)
@@ -20,14 +13,14 @@ function pickRandom<T>(items: T[], count: number): T[] {
         .slice(0, count)
 }
 
-function ProductCard({ p }: { p: ApiProduct }) {
-    const agotado = p.cantidad <= 0
+function ProductCard({ p }: { p: Product }) {
+    const agotado = p.stock <= 0
     return (
         <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
             <div className="relative h-44 w-full">
                 <img
                     src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop"
-                    alt={p.nombre}
+                    alt={p.name}
                     className="object-cover w-full h-full"
                 />
                 <span
@@ -39,9 +32,9 @@ function ProductCard({ p }: { p: ApiProduct }) {
                 </span>
             </div>
             <div className="p-4">
-                <h3 className="text-white font-semibold line-clamp-2">{p.nombre}</h3>
-                <p className="text-indigo-300 mt-2">{formatCLP(p.precio_venta)}</p>
-                <p className="text-indigo-200 text-xs mt-1 line-clamp-2">{p.descripcion}</p>
+                <h3 className="text-white font-semibold line-clamp-2">{p.name}</h3>
+                <p className="text-indigo-300 mt-2">{formatCLP(p.unitPrice)}</p>
+                <p className="text-indigo-200 text-xs mt-1 line-clamp-2">{p.description}</p>
                 <div className="mt-4 flex gap-2">
                     <button
                         className={`px-3 py-2 rounded-md text-sm font-medium ${
@@ -61,36 +54,15 @@ function ProductCard({ p }: { p: ApiProduct }) {
 }
 
 export default function Home() {
-    const [products, setProducts] = useState<ApiProduct[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                setLoading(true)
-                setError(null)
-                const res = await fetch('http://localhost:8080/products')
-                if (!res.ok) throw new Error('No se pudo cargar productos destacados')
-                const json = await res.json()
-                setProducts(json.data as ApiProduct[])
-            } catch (err) {
-                setError((err as Error).message)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        load()
-    }, [])
+    const { data: products = [], isLoading: loading, error } = useProducts()
 
     const featuredUnder100 = useMemo(() => {
-        const under100k = products.filter((p) => p.precio_venta < 100000)
+        const under100k = products.filter((p) => p.unitPrice < 100000)
         return pickRandom(under100k, 4)
     }, [products])
 
     const featuredBetween100And200 = useMemo(() => {
-        const between = products.filter((p) => p.precio_venta >= 100000 && p.precio_venta < 200000)
+        const between = products.filter((p) => p.unitPrice >= 100000 && p.unitPrice < 200000)
         return pickRandom(between, 4)
     }, [products])
 
@@ -169,7 +141,7 @@ export default function Home() {
                     )}
 
                     {error && (
-                        <p className="text-red-300">{error}</p>
+                        <p className="text-red-300">{error.message}</p>
                     )}
 
                     {!loading && !error && featuredUnder100.length === 0 && (
@@ -179,7 +151,7 @@ export default function Home() {
                     {!loading && !error && featuredUnder100.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             {featuredUnder100.map((p) => (
-                                <ProductCard key={p.id_producto} p={p} />
+                                <ProductCard key={p.productID} p={p} />
                             ))}
                         </div>
                     )}
@@ -196,7 +168,7 @@ export default function Home() {
                     )}
 
                     {error && (
-                        <p className="text-red-300">{error}</p>
+                        <p className="text-red-300">{error.message}</p>
                     )}
 
                     {!loading && !error && featuredBetween100And200.length === 0 && (
@@ -206,7 +178,7 @@ export default function Home() {
                     {!loading && !error && featuredBetween100And200.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             {featuredBetween100And200.map((p) => (
-                                <ProductCard key={p.id_producto} p={p} />
+                                <ProductCard key={p.productID} p={p} />
                             ))}
                         </div>
                     )}

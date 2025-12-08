@@ -1,28 +1,20 @@
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-
-type ApiProduct = {
-    id_producto: number
-    nombre: string
-    descripcion: string
-    precio_venta: number
-    estado: boolean
-    cantidad: number
-}
+import { useProducts } from '../api/queries/useProducts'
+import type { Product } from '../types/Product'
 
 const formatCLP = (value: number) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value)
 
-function ProductCard({ product }: { product: ApiProduct }) {
-    const agotado = product.cantidad <= 0
+function ProductCard({ product }: { product: Product }) {
+    const agotado = product.stock <= 0
 
     return (
         <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
             <div className="relative h-44 w-full">
                 <img
                     src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop"
-                    alt={product.nombre}
+                    alt={product.name}
                     className="object-cover w-full h-full"
                 />
                 <span
@@ -35,13 +27,13 @@ function ProductCard({ product }: { product: ApiProduct }) {
             </div>
 
             <div className="p-4">
-                <h3 className="text-white font-semibold line-clamp-2">{product.nombre}</h3>
-                <p className="text-indigo-200 text-sm mt-2 line-clamp-3">{product.descripcion}</p>
+                <h3 className="text-white font-semibold line-clamp-2">{product.name}</h3>
+                <p className="text-indigo-200 text-sm mt-2 line-clamp-3">{product.description}</p>
 
                 <div className="mt-4 flex items-center justify-between">
-                    <p className="text-indigo-300 font-semibold">{formatCLP(product.precio_venta)}</p>
+                    <p className="text-indigo-300 font-semibold">{formatCLP(product.unitPrice)}</p>
                     <p className="text-xs text-indigo-300">
-                        Stock: <span className="font-semibold">{product.cantidad}</span>
+                        Stock: <span className="font-semibold">{product.stock}</span>
                     </p>
                 </div>
 
@@ -65,19 +57,9 @@ function ProductCard({ product }: { product: ApiProduct }) {
     )
 }
 
-async function fetchProducts(): Promise<ApiProduct[]> {
-    const res = await fetch('http://localhost:8080/products')
-    if (!res.ok) throw new Error('No se pudo cargar el catálogo')
-    const json = await res.json()
-    return json.data as ApiProduct[]
-}
-
 export default function Products() {
     const { search } = useLocation()
-    const { data: products = [], isLoading: loading, error } = useQuery<ApiProduct[], Error>({
-        queryKey: ['products'],
-        queryFn: fetchProducts,
-    })
+    const { data: products = [], isLoading: loading, error } = useProducts()
 
     const searchTerm = useMemo(() => {
         const params = new URLSearchParams(search)
@@ -87,14 +69,14 @@ export default function Products() {
     const filtered = useMemo(() => {
         if (!searchTerm) return products
         return products.filter((p) =>
-            `${p.nombre} ${p.descripcion}`.toLowerCase().includes(searchTerm)
+            `${p.name} ${p.description}`.toLowerCase().includes(searchTerm)
         )
     }, [products, searchTerm])
 
     const stats = useMemo(() => {
         if (!products.length) return { total: '—', disponibles: '—', agotados: '—' }
-        const disponibles = products.filter((p) => p.cantidad > 0).length
-        const agotados = products.filter((p) => p.cantidad <= 0).length
+        const disponibles = products.filter((p) => p.stock > 0).length
+        const agotados = products.filter((p) => p.stock <= 0).length
         return {
             total: `${products.length}`,
             disponibles: `${disponibles}`,
@@ -172,7 +154,7 @@ export default function Products() {
                             )}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {filtered.map((product) => (
-                                    <ProductCard key={product.id_producto} product={product} />
+                                    <ProductCard key={product.productID} product={product} />
                                 ))}
                             </div>
                         </>

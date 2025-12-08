@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { InputText } from 'primereact/inputtext'
-import { Avatar } from 'primereact/avatar'
-import { Badge } from 'primereact/badge'
 import 'primeicons/primeicons.css'
 import logo from '../assets/logo.png'
 

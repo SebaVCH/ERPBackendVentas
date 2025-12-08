@@ -10,6 +10,7 @@ type CustomerRepository interface {
 	GetCustomers() ([]domain.Cliente, error)
 	GetCustomerTx(id int) (bool, error)
 	GetCustomerByID(id int) (domain.Cliente, error)
+	UpdateCustomer(customer domain.Cliente) error
 }
 
 type customerRepository struct {
@@ -49,4 +50,12 @@ func (cu *customerRepository) GetCustomerByID(id int) (domain.Cliente, error) {
 		return domain.Cliente{}, err
 	}
 	return customer, nil
+}
+
+func (cu *customerRepository) UpdateCustomer(customer domain.Cliente) error {
+	err := cu.db.Model(&customer).Updates(customer).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

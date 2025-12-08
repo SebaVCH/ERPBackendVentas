@@ -15,7 +15,6 @@ import { useEffect, useState } from 'react'
 import useSessionStore from './stores/useSessionStore'
 import { ErrorState } from './components/ErrorState'
 import { LoadingState } from './components/LoadingState'
-import { useAccessToken } from './stores/useSessionStore'
 import Products from './pages/Products'
 
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { InputText } from 'primereact/inputtext'
+import { useCheckToken } from '../api/queries/useAuth'
 import 'primeicons/primeicons.css'
 import logo from '../assets/logo.png'
 
@@ -8,6 +9,8 @@ export default function Header() {
     const navigate = useNavigate()
     const { search } = useLocation()
     const [term, setTerm] = useState('')
+    const { data: checkToken } = useCheckToken()
+    const isLoggedIn = !!checkToken?.clientID
 
     // Si venimos de /products con ?search=..., muestra el término en el input
     useEffect(() => {
@@ -73,10 +76,17 @@ export default function Header() {
                                 69
                             </span>
                         </button>
-                        <button onClick={() => navigate('/mi-perfil')} className="flex items-center gap-2 px-3 py-2 bg-white text-indigo-700 hover:bg-indigo-50 border border-white/60 rounded-md shadow">
-                            <i className="pi pi-user"></i>
-                            <span className="text-sm font-semibold">Mi cuenta</span>
-                        </button>
+                        {!isLoggedIn ? (
+                            <button onClick={() => navigate('/register')} className="flex items-center gap-2 px-3 py-2 bg-cyan-400 text-black hover:bg-cyan-300 border border-cyan-500 rounded-md shadow font-semibold">
+                                <i className="pi pi-user-plus"></i>
+                                <span className="text-sm">Registrarse</span>
+                            </button>
+                        ) : (
+                            <button onClick={() => navigate('/mi-perfil')} className="flex items-center gap-2 px-3 py-2 bg-white text-indigo-700 hover:bg-indigo-50 border border-white/60 rounded-md shadow">
+                                <i className="pi pi-user"></i>
+                                <span className="text-sm font-semibold">Mi cuenta</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

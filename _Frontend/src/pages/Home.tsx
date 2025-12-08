@@ -1,40 +1,99 @@
-type Product = {
-    id: number;
-    name: string;
-    price: string;
-    img: string;
-    tag?: string;
-};
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
-const sampleProducts: Product[] = [
-    { id: 1, name: "Teclado Mecánico RGB X-1", price: "$89.99", img: "https://image.pngaaa.com/367/1268367-small.png" , tag: "Nuevo"},
-    { id: 2, name: "Auriculares Gaming Nebula", price: "$129.99", img: "https://image.pngaaa.com/367/1268367-small.png", tag: "Top" },
-    { id: 3, name: "Mouse Óptico Phantom", price: "$49.99", img: "https://image.pngaaa.com/367/1268367-small.png" },
-    { id: 4, name: "Soporte RGB para Monitor", price: "$59.99", img: "https://image.pngaaa.com/367/1268367-small.png" }
-];
+type ApiProduct = {
+    id_producto: number
+    nombre: string
+    descripcion: string
+    precio_venta: number
+    estado: boolean
+    cantidad: number
+}
 
-function ProductCard({ p }: { p: Product }) {
+const formatCLP = (value: number) =>
+    new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value)
+
+function pickRandom<T>(items: T[], count: number): T[] {
+    if (items.length <= count) return items
+    return [...items]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, count)
+}
+
+function ProductCard({ p }: { p: ApiProduct }) {
+    const agotado = p.cantidad <= 0
     return (
         <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
             <div className="relative h-44 w-full">
-                <img src={p.img} alt={p.name} className="object-cover w-full h-full" />
-                {p.tag && (
-                    <span className="absolute top-3 left-3 bg-indigo-500/90 text-xs text-white px-2 py-1 rounded-full">{p.tag}</span>
-                )}
+                <img
+                    src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop"
+                    alt={p.nombre}
+                    className="object-cover w-full h-full"
+                />
+                <span
+                    className={`absolute top-3 left-3 text-xs text-white px-2 py-1 rounded-full ${
+                        agotado ? 'bg-red-500/90' : 'bg-indigo-500/90'
+                    }`}
+                >
+                    {agotado ? 'Agotado' : 'En stock'}
+                </span>
             </div>
             <div className="p-4">
-                <h3 className="text-white font-semibold">{p.name}</h3>
-                <p className="text-indigo-300 mt-2">{p.price}</p>
+                <h3 className="text-white font-semibold line-clamp-2">{p.nombre}</h3>
+                <p className="text-indigo-300 mt-2">{formatCLP(p.precio_venta)}</p>
+                <p className="text-indigo-200 text-xs mt-1 line-clamp-2">{p.descripcion}</p>
                 <div className="mt-4 flex gap-2">
-                    <button className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-sm">Agregar</button>
+                    <button
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                            agotado
+                                ? 'bg-gray-500/60 text-gray-300 cursor-not-allowed'
+                                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                        }`}
+                        disabled={agotado}
+                    >
+                        Agregar
+                    </button>
                     <button className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm">Ver</button>
                 </div>
             </div>
         </div>
-    );
+    )
 }
 
 export default function Home() {
+    const [products, setProducts] = useState<ApiProduct[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setLoading(true)
+                setError(null)
+                const res = await fetch('http://localhost:8080/products')
+                if (!res.ok) throw new Error('No se pudo cargar productos destacados')
+                const json = await res.json()
+                setProducts(json.data as ApiProduct[])
+            } catch (err) {
+                setError((err as Error).message)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        load()
+    }, [])
+
+    const featuredUnder100 = useMemo(() => {
+        const under100k = products.filter((p) => p.precio_venta < 100000)
+        return pickRandom(under100k, 4)
+    }, [products])
+
+    const featuredBetween100And200 = useMemo(() => {
+        const between = products.filter((p) => p.precio_venta >= 100000 && p.precio_venta < 200000)
+        return pickRandom(between, 4)
+    }, [products])
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 text-slate-100">
             <header className="max-w-7xl mx-auto px-6 py-12">
@@ -47,10 +106,7 @@ export default function Home() {
                         </div>
                     </div>
                     <nav className="hidden md:flex gap-6 text-indigo-200">
-                        <a className="hover:text-white">Productos</a>
-                        <a className="hover:text-white">Ofertas</a>
-                        <a className="hover:text-white">Accesorios</a>
-                        <a className="hover:text-white">Contacto</a>
+                        <Link className="hover:text-white" to="/products">Productos</Link>
                     </nav>
                 </div>
             </header>
@@ -62,8 +118,11 @@ export default function Home() {
                         <p className="mt-4 text-indigo-200 max-w-xl">Explora nuestra selección curada de componentes y periféricos pensados para gamers, creadores y profesionales de alto rendimiento. Tecnología que se ve tan bien como rinde.</p>
 
                         <div className="mt-6 flex gap-4">
-                            <button className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full text-black font-semibold shadow-lg">Ver Colección</button>
-                            <button className="px-6 py-3 border border-white/10 rounded-full text-indigo-200">Ofertas</button>
+                            <Link to="/products">
+                                <button className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full text-black font-semibold shadow-lg">
+                                    Ver Colección
+                                </button>
+                            </Link>
                         </div>
 
                         <div className="mt-8 grid grid-cols-3 gap-3">
@@ -100,12 +159,57 @@ export default function Home() {
                 </section>
 
                 <section className="mb-12">
-                    <h3 className="text-2xl font-bold mb-6">Productos destacados</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                        {sampleProducts.map(p => (
-                            <ProductCard key={p.id} p={p} />
-                        ))}
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-2xl font-bold">Por menos de 100.000</h3>
+                        <p className="text-indigo-200 text-sm">4 productos aleatorios bajo ese precio</p>
                     </div>
+
+                    {loading && (
+                        <p className="text-indigo-200">Cargando productos...</p>
+                    )}
+
+                    {error && (
+                        <p className="text-red-300">{error}</p>
+                    )}
+
+                    {!loading && !error && featuredUnder100.length === 0 && (
+                        <p className="text-indigo-200">No hay productos bajo 100.000 por ahora.</p>
+                    )}
+
+                    {!loading && !error && featuredUnder100.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                            {featuredUnder100.map((p) => (
+                                <ProductCard key={p.id_producto} p={p} />
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                <section className="mb-12">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-2xl font-bold">Entre 100.000 y 200.000</h3>
+                        <p className="text-indigo-200 text-sm">4 productos aleatorios en ese rango</p>
+                    </div>
+
+                    {loading && (
+                        <p className="text-indigo-200">Cargando productos...</p>
+                    )}
+
+                    {error && (
+                        <p className="text-red-300">{error}</p>
+                    )}
+
+                    {!loading && !error && featuredBetween100And200.length === 0 && (
+                        <p className="text-indigo-200">No hay productos en ese rango por ahora.</p>
+                    )}
+
+                    {!loading && !error && featuredBetween100And200.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                            {featuredBetween100And200.map((p) => (
+                                <ProductCard key={p.id_producto} p={p} />
+                            ))}
+                        </div>
+                    )}
                 </section>
 
                 <section className="mt-12 bg-gradient-to-r from-white/3 to-white/2 border border-white/5 rounded-2xl p-6">
@@ -115,7 +219,7 @@ export default function Home() {
                             <p className="text-indigo-300">Encuentra combos, kits y asesoría para montajes con estilo y potencia.</p>
                         </div>
                         <div>
-                            <button className="px-5 py-3 bg-cyan-400 text-black rounded-lg font-semibold">Explorar kits</button>
+                            <p className="px-5 py-3 bg-cyan-400 text-black rounded-lg font-semibold">Llámanos al +56988300793</p>
                         </div>
                     </div>
                 </section>
@@ -132,6 +236,6 @@ export default function Home() {
                 </div>
             </footer>
         </div>
-    );
+    )
 }
 

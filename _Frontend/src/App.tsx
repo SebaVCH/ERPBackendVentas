@@ -13,6 +13,7 @@ import SuccessPayment from './pages/Payment/SuccessPayment/SuccessPayment'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { useEffect, useState } from 'react'
 import { useAccessToken } from './stores/useSessionStore'
+import Products from './pages/Products'
 
 
 const MainLayout = () => {
@@ -62,15 +63,15 @@ export default function App() {
                     <Route path='/login' element={<Login />} />
                     <Route path='/register' element={<Register />} />
 
-                    <Route element={<MainLayout />}>
-                        <Route path='/' element={<Home />} />
-                        <Route path='/payment/success' element={<SuccessPayment />} />
-                        <Route path='/payment/failure' element={<FailurePayment />} />
-
+                    <Route path='/' element={<MainLayout />}>
+                        <Route index element={<Home />} />
+                        <Route path='products' element={<Products />} />
+                        <Route path='payment/success' element={<SuccessPayment />} />
+                        <Route path='payment/failure' element={<FailurePayment />} />
 
                         <Route element={<ProtectedRoute />}>
-                            <Route path='/mi-perfil' element={<UserProfile />} />
-                            <Route path='/mi-carrito' element={<Cart />}/>
+                            <Route path='mi-perfil' element={<UserProfile />} />
+                            <Route path='mi-carrito' element={<Cart />}/>
                         </Route>
                     </Route>
         

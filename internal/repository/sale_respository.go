@@ -56,7 +56,7 @@ func (r *saleRepository) CreateSale(venta *domain.Venta, detalles []domain.Detal
 			return errors.New("no se pudo obtener el ID de la venta creada")
 		}
 
-		// Validar reservas: cargar reservas del carrito para los productos de la venta
+		// cargar reservas del carrito para los productos de la venta
 		var productIDs []int
 		for i := range detalles {
 			productIDs = append(productIDs, detalles[i].IDProducto)
@@ -93,25 +93,19 @@ func (r *saleRepository) CreateSale(venta *domain.Venta, detalles []domain.Detal
 				return err
 			}
 
-			// Aca verifico que haya stock suficiente
-			if product.Cantidad < detalles[i].Cantidad {
-				return errors.New("no hay suficiente stock para realizar la venta")
-			}
-
 			// Se crea el detalle de la venta
 			if err := tx.Create(&detalles[i]).Error; err != nil {
 				return err
 			}
 
-			// aca realizo la el descuento del producto
-			result := tx.Model(&domain.Producto{}).
-				Where("id_producto = ? AND cantidad >= ?", detalles[i].IDProducto, detalles[i].Cantidad).
-				UpdateColumn("cantidad", gorm.Expr("cantidad - ?", detalles[i].Cantidad))
-			if result.Error != nil {
-				return result.Error
+			// Insertar producto en la tabla de productos por despachar
+			productoPorDespachar := domain.ProductoPorDespachar{
+				IDProducto:           detalles[i].IDProducto,
+				CantidadPorDespachar: detalles[i].Cantidad,
+				FechaRegistro:        time.Now().Format("2006-01-02 15:04:05"),
 			}
-			if result.RowsAffected == 0 {
-				return errors.New("stock insuficiente para producto id " + fmt.Sprint(detalles[i].IDProducto))
+			if err := tx.Create(&productoPorDespachar).Error; err != nil {
+				return err
 			}
 
 			// aca elimina reserva asociada al carrito y producto
@@ -173,11 +167,10 @@ func (r *saleRepository) GetSalesByClientID(clientID int) (sales []domain.Venta,
 	return sales, nil
 }
 
-
 func (r *saleRepository) GetSalesDetails(ventaID int) (detallesVenta []domain.DetalleVenta, err error) {
 	err = r.db.Preload("Producto").Where("id_venta = ?", ventaID).Find(&detallesVenta).Error
 	if err != nil {
-		return nil, err 
+		return nil, err
 	}
 
 	return detallesVenta, nil

@@ -23,9 +23,11 @@ type PaymentUsecase interface {
 }
 
 type paymentUsecase struct {
-	PayRepo  repository.PaymentRepository
-	CartRepo repository.CartRepository
-	SaleRepo repository.SaleRepository
+	PayRepo       repository.PaymentRepository
+	CartRepo      repository.CartRepository
+	SaleRepo      repository.SaleRepository
+	CustomerRepo  repository.CustomerRepository
+	DirectionRepo repository.DirectionRepository
 }
 
 const (
@@ -35,11 +37,13 @@ const (
 	PaymentConditionFull  = "Pago Completo"
 )
 
-func NewPaymentUsecase(payRepo repository.PaymentRepository, cartRepo repository.CartRepository, saleRepo repository.SaleRepository) PaymentUsecase {
+func NewPaymentUsecase(payRepo repository.PaymentRepository, cartRepo repository.CartRepository, saleRepo repository.SaleRepository, customerRepo repository.CustomerRepository, directionRepo repository.DirectionRepository) PaymentUsecase {
 	return &paymentUsecase{
-		PayRepo:  payRepo,
-		CartRepo: cartRepo,
-		SaleRepo: saleRepo,
+		PayRepo:       payRepo,
+		CartRepo:      cartRepo,
+		SaleRepo:      saleRepo,
+		CustomerRepo:  customerRepo,
+		DirectionRepo: directionRepo,
 	}
 }
 
@@ -57,7 +61,29 @@ func (pu *paymentUsecase) CreateCheckout(c *gin.Context) {
 		return
 	}
 
-	// IMPORTANTE-VALIDAR ID_DIRECCION DEL CLIENTE
+	// Obtener el email del cliente
+	customer, err := pu.CustomerRepo.GetCustomerByID(req.IDCliente)
+	if err != nil {
+		c.JSON(http.StatusNotFound, APIResponse{Success: false, Message: "cliente no encontrado", Error: err.Error()})
+		return
+	}
+
+	if customer.Email == "" {
+		c.JSON(http.StatusBadRequest, APIResponse{Success: false, Message: "el cliente no tiene email configurado"})
+		return
+	}
+
+	// Validar que la dirección pertenezca al cliente
+	direction, err := pu.DirectionRepo.GetDirectionByID(req.IDDireccion)
+	if err != nil {
+		c.JSON(http.StatusNotFound, APIResponse{Success: false, Message: "dirección no encontrada", Error: err.Error()})
+		return
+	}
+
+	if direction.IDCliente != req.IDCliente {
+		c.JSON(http.StatusForbidden, APIResponse{Success: false, Message: "la dirección no pertenece al cliente"})
+		return
+	}
 
 	// Hacer la reserva de los productos
 	if err := pu.CartRepo.ReserveSaleStock(req.IDCliente); err != nil {
@@ -69,7 +95,7 @@ func (pu *paymentUsecase) CreateCheckout(c *gin.Context) {
 	externalRef := strconv.FormatInt(int64(req.IDCliente), 10) + "," + strconv.FormatInt(int64(req.IDDireccion), 10)
 
 	// Crear la preference con expiración corta (5 minutos)
-	initPoint, prefID, err := pu.PayRepo.CreatePreference(req.Amount, req.Title, externalRef, CheckoutExpiryMinutes)
+	initPoint, prefID, err := pu.PayRepo.CreatePreference(req.Amount, req.Title, externalRef, customer.Email, CheckoutExpiryMinutes)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, APIResponse{Success: false, Message: "error creando preference", Error: err.Error()})
 		return
@@ -86,7 +112,20 @@ func (pu *paymentUsecase) CreateCheckout(c *gin.Context) {
 }
 
 func (pu *paymentUsecase) PaymentPendingHandler(c *gin.Context) {
-	panic("unimplemented")
+	paymentID, err := pu.parsePaymentID(c.Query("payment_id"))
+	if err != nil {
+		pu.redirectToFailure(c, "payment id no válido", 0)
+		return
+	}
+
+	detail, err := pu.PayRepo.GetPaymentDetail(paymentID)
+	if err != nil {
+		log.Printf("Error getting payment detail for ID %d: %v", paymentID, err)
+		pu.redirectToFailure(c, "Pago pendiente - Error al obtener detalles", paymentID)
+		return
+	}
+
+	pu.redirectToFailure(c, fmt.Sprintf("Pago pendiente: %s", detail.StatusDetail), paymentID)
 }
 
 func (pu *paymentUsecase) PaymentFailureHandler(c *gin.Context) {
@@ -114,11 +153,24 @@ func (pu *paymentUsecase) PaymentSuccessHandler(c *gin.Context) {
 	collectionStatus := c.Query("collection_status")
 	paymentType := c.Query("payment_type")
 
-	// IMPORTANTE - VERIFICAR PAYMENT_ID
-
 	paymentID, err := pu.parsePaymentID(strPaymentID)
 	if err != nil {
-		pu.redirectToFailure(c, "payment id inválido", paymentID)
+		pu.redirectToFailure(c, "payment id inválido", 0)
+		return
+	}
+
+	// Verificar el payment_id con Mercado Pago
+	detail, err := pu.PayRepo.GetPaymentDetail(paymentID)
+	if err != nil {
+		log.Printf("Error getting payment detail for ID %d: %v", paymentID, err)
+		pu.redirectToFailure(c, "Error al verificar el pago con Mercado Pago", paymentID)
+		return
+	}
+
+	// Verificar que el pago esté realmente aprobado según MP
+	if detail.Status != PaymentStatusApproved {
+		log.Printf("Payment ID %d not approved. Status: %s, StatusDetail: %s", paymentID, detail.Status, detail.StatusDetail)
+		pu.redirectToFailure(c, fmt.Sprintf("Pago no aprobado: %s", detail.StatusDetail), paymentID)
 		return
 	}
 

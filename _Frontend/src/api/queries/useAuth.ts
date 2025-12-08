@@ -34,6 +34,9 @@ export function useRegister() {
         mutationFn: ( newClient : Register) => register(newClient),
         onSuccess: (token) => {
             setAccessToken(token)
+        },
+        onError: (error : AxiosError<ErrorResponse>) => {
+            console.log(error)
         }
     })
 }

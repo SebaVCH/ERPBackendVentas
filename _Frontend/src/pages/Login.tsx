@@ -11,14 +11,14 @@ export default function Login() {
     const navigate = useNavigate()
     const [ email, setEmail ] = useState('')
     const [ password, setPassword ] = useState('')
-    const [ error, setError ] = useState<string | undefined>(undefined) 
+    const [ error, setError ] = useState<string | null>(null) 
     const { mutate, isPending, isSuccess } = useLogin()
 
 
     const handleLogin = (e : FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if(!e.currentTarget.checkValidity()) return     
-        setError(undefined)
+        setError(null)
         mutate({ email, password }, 
         {
             onSuccess: () => {
@@ -27,7 +27,7 @@ export default function Login() {
                 }, 1000)
             },
             onError: (error) => {
-                setError(error.response?.data.message)
+                setError(error.response?.data.message ?? null)
             }
         })
     }
@@ -66,8 +66,8 @@ export default function Login() {
                                     type="email"
                                     value={email}
                                     className={error ? "p-invalid" : ""}
-                                    onChange={(e) => {setEmail(e.target.value); setError(undefined)}}
-                                    onBlur={() => setError(undefined)}
+                                    onChange={(e) => {setEmail(e.target.value); setError(null)}}
+                                    onBlur={() => setError(null)}
                                     placeholder="tu@email.com"
                                 />
                             </div>
@@ -87,7 +87,7 @@ export default function Login() {
                                     type={"password"}
                                     value={password}
                                     className={error ? "p-invalid" : ""}
-                                    onChange={(e) => {setPassword(e.target.value); setError(undefined)}}
+                                    onChange={(e) => {setPassword(e.target.value); setError(null)}}
                                     placeholder="••••••••"
                                     
                                 />
@@ -97,12 +97,7 @@ export default function Login() {
                         <Button
                             type="submit"
                             severity={isSuccess ? 'success' : 'contrast'}
-                            className={`w-full 
-                                        min-h-[50px] 
-                                        font-semibold! 
-                                        flex items-center justify-center gap-2
-                                        transition-all duration-300 ease-in-out
-                            `}
+                            className={`w-full min-h-[50px] font-semibold! flex items-center justify-center gap-2 transition-all duration-300 ease-in-out`}
                             disabled={isPending}
                         >
                             

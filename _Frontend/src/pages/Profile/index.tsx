@@ -85,7 +85,7 @@ export default function UserProfile() {
                     <div className="lg:col-span-1">
                         <CardHeader 
                             userProfile={userProfile} 
-                            memberSince={""} 
+                            memberSince={(userProfile?.createdAt.getFullYear())?.toString() ?? "_undefined_"} 
                             setActiveSection={setActiveSection} 
                             activeSection={activeSection} 
                             profileSections={profileSections}  

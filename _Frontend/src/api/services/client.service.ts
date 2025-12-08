@@ -1,7 +1,7 @@
 import type { Address } from "../../types/Address";
 import type { Client } from "../../types/Client";
 import { adaptAddressResponse, type AddressResponse } from "../adapter/address.adapter";
-import { adaptUserResponse, type ClientResponse } from "../adapter/client.adapter";
+import { adaptUserRequest, adaptUserResponse, type ClientResponse } from "../adapter/client.adapter";
 import { axiosInstance } from "./axiosInstance";
 
 
@@ -32,4 +32,10 @@ export async function getAddressByClient(id : number) : Promise<Address[]> {
     console.log(data)
     const res = (data?.data as AddressResponse[]).map((a) => adaptAddressResponse(a))
     return res
+}
+
+export async function updateClient( clientID : number, uptClient : Partial<Client>): Promise<boolean> {
+    const payload = adaptUserRequest(uptClient)
+    const { data } = await axiosInstance.put(`/${RESOURCE_NAME}/${clientID}`, payload)
+    return data?.sucess
 }

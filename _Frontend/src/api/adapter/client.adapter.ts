@@ -9,7 +9,10 @@ export type ClientResponse = {
     telefono:   string
     email:      string
     estado:     string
+    created_at: string
 } 
+
+export type ClientUpdate = Partial<Client>
 
 export type ClientRequest = Client
 
@@ -22,11 +25,12 @@ export function adaptUserResponse( res : ClientResponse ) : Client {
         email: res.email,
         phone: res.telefono,
         state: res.estado,
-        address: res.direccion
+        address: res.direccion,
+        createdAt: new Date(res.created_at)
     }
 }
 
-export function adaptUserRequest( req : ClientRequest ) : ClientResponse {
+export function adaptUserRequest( req : Partial<ClientRequest> ) : Partial<ClientResponse> {
     return {
         id_cliente: req.id,
         nombre: req.firstName,
@@ -34,6 +38,6 @@ export function adaptUserRequest( req : ClientRequest ) : ClientResponse {
         email: req.email,
         telefono: req.phone,
         estado: req.state,
-        direccion: req.address
+        direccion: req.address,
     }
 }

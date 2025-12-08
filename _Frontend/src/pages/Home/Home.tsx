@@ -111,7 +111,7 @@ export default function Home() {
                     <div>
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                             <div className="absolute inset-0 bg-linear-to-tr from-indigo-600/30 via-transparent to-cyan-500/20 mix-blend-screen pointer-events-none" />
-                            <img alt="hero" src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=5" className="w-full h-80 object-cover" />
+                            <img alt="hero" src="/venta_hardware.jpg" className="w-full h-80 object-cover scale-110" />
                         </div>
                     </div>
                 </section>

@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DataView } from "primereact/dataview";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { createCheckout } from "../api/services/payment.service";
 import ConfirmationCheckoutDialog from "./Cart/ConfirmationCheckoutDialog";
+import { useClientID } from "../api/queries/useClients";
+import { useCart } from "../api/queries/useCart";
+import { ErrorState } from "../components/ErrorState";
+import { LoadingState } from "../components/LoadingState";
 
 interface Product {
     id: string;
@@ -45,6 +49,15 @@ export default function Cart() {
             quantity: 1
         }
     ]);
+
+    const clientID = useClientID() as number
+    const { data, error, isLoading } = useCart(clientID)
+
+    useEffect(() => {
+        console.log(data)
+        console.log(error?.status)
+    }, [data, error])
+
 
     const increaseQuantity = (productId: string) => {
         setProducts(products.map(p =>
@@ -145,6 +158,12 @@ export default function Cart() {
             title: "e-commerce"
         })
         window.open(res.initPoint, '_self')
+    }
+
+    if(isLoading) return <LoadingState message={"Obteniendo Carrito"} />
+
+    if(error && error.status == 404) {
+        return <ErrorState title={"Carrito no encontrado"} message={"¡Vuelve al home para empezar a rellenar el carrito!"} />
     }
 
     return (

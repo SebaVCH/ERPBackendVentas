@@ -83,7 +83,7 @@ export default function ProfileSection({ userProfile, isLoading } : ProfileSecti
                         <label className="text-sm text-gray-600">Teléfono</label>
                         { isLoading || !userProfile ? 
                             <Skeleton height="28px"  width="10rem"></Skeleton> :
-                            <p className="text-lg font-semibold text-gray-800">{userProfile.phone}</p>
+                            <p className="text-lg font-semibold text-gray-800">{userProfile.phone ? userProfile.phone :'¡Ingresa un número de teléfono!'}</p>
                         }
                     </div>
                 </div>

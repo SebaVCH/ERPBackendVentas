@@ -4,10 +4,11 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import ProfileSection, { type ProfileSectionProps } from "./sections/ProfileSection";
 import AddressSection, { type AddressSectionProps } from "./sections/AddressSection";
-import { useClient, useClientAddress } from "../../api/queries/useClients";
+import { useClient, useClientAddress, useClientID } from "../../api/queries/useClients";
 import CardHeader from "./components/CardHeader";
 import { ProfileSectionSkeleton } from "./components/ProfileSectionSkeleton";
 import OrderSection, { type OrderSectionProps } from "./sections/OrderSection";
+import { ErrorState } from "../../components/ErrorState";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ProfileSection<Props = any> = {
@@ -49,8 +50,10 @@ type profileSectionsProps = {
 export default function UserProfile() {
 
     const [activeSection, setActiveSection] = useState("perfil")
-    const { data: userProfile, isSuccess, isLoading } = useClient(1)
-    const { data: addresses } = useClientAddress(1)
+
+    const clientID  = useClientID() as number
+    const { data: userProfile, isSuccess, isLoading, isError, error } = useClient(clientID)
+    const { data: addresses } = useClientAddress(clientID)
 
     const Section = useMemo(() => profileSections.find((s) => s.id === activeSection )?.component, [activeSection])
     
@@ -61,11 +64,17 @@ export default function UserProfile() {
         },
         direccion: {
             addresses: addresses ?? [],
-            clientID: 1
+            clientID: clientID
         },
         pedidos: {
-            clientID: 1
+            clientID: clientID
         }
+    }
+
+    if(isError) {
+        return (
+            <ErrorState title={"Error al obtener los datos del perfil"} message={error.message} />
+        )
     }
 
     return (

@@ -1,6 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
-import useSessionStore from "../../stores/useSessionStore";
-import { login, register } from "../services/auth.service";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import useSessionStore, { useAccessToken } from "../../stores/useSessionStore";
+import { checkToken, login, register } from "../services/auth.service";
 import type { Register } from "../adapter/auth.adapter";
 import type { AxiosError } from "axios";
 
@@ -38,5 +38,15 @@ export function useRegister() {
         onError: (error : AxiosError<ErrorResponse>) => {
             console.log(error)
         }
+    })
+}
+
+export function useCheckToken() {
+    const accessToken = useAccessToken()
+    return useQuery({
+        queryKey: ['check', accessToken],
+        queryFn: () => checkToken(accessToken),
+        staleTime: 1000 * 60 * 5,
+        retry: false,
     })
 }

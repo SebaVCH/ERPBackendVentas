@@ -27,7 +27,7 @@ export default function Login() {
                 }, 1000)
             },
             onError: (error) => {
-                setError(error.response?.data.message ?? null)
+                setError(error.response?.data.message ?? error.message ?? null)
             }
         })
     }

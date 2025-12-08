@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import './App.css'
 import Home from './pages/Home'
 import Header from './components/Header'
@@ -10,9 +10,11 @@ import UserProfile from './pages/Profile'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import FailurePayment from './pages/Payment/FailrutePayment/FailurePayment'
 import SuccessPayment from './pages/Payment/SuccessPayment/SuccessPayment'
-import { ProgressSpinner } from 'primereact/progressspinner'
+import { useCheckToken } from './api/queries/useAuth'
 import { useEffect, useState } from 'react'
-import { useAccessToken } from './stores/useSessionStore'
+import useSessionStore from './stores/useSessionStore'
+import { ErrorState } from './components/ErrorState'
+import { LoadingState } from './components/LoadingState'
 
 
 const MainLayout = () => {
@@ -27,29 +29,50 @@ const MainLayout = () => {
     )
 }
 
-function ProtectedRoute() {
-    const accessToken = useAccessToken()    
 
-    const [loading, setLoading] = useState(true)
+function ProtectedRoute() {
+    const navigate = useNavigate()
+    const { clearSession } = useSessionStore()
+    const { isLoading, isError, error } = useCheckToken()
+
+    const [seconds, setSeconds] = useState(5)
     useEffect(() => {
-        const id = setTimeout(() => setLoading(false), 200)
-        return () => clearTimeout(id)
-    }, [])
-    
-    if (loading) {
+        if (seconds <= 0) return
+
+        const timer = setInterval(() => {
+            setSeconds((prev) => prev - 1)
+        }, 1000);
+
+        return () => clearInterval(timer)
+    }, [seconds])
+
+    useEffect(() => {
+        if (isError) {
+            clearSession()
+            const timer = setTimeout(() => {
+                navigate("/login", { replace: true })
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [isError, error, clearSession, navigate])
+
+
+    if (isLoading) {
         return (
-            <div className="min-w-screen min-h-screen flex items-center justify-center">
-                <ProgressSpinner />
-            </div>
-        );
+            <LoadingState message={''} />
+        )
     }
 
-    if (!accessToken) return <Navigate to="/login" replace/>
+    if (isError) {
+        return (
+            <ErrorState title={'Sesión expirada'} message={'Serás redirigido automáticamente al login en ' + seconds} />
+        )
+    }
 
-    return (
-        <Outlet />
-    )
+    return <Outlet />
 }
+
+
 
 const queryClient = new QueryClient()
 

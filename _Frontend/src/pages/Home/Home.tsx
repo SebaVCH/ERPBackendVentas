@@ -1,63 +1,24 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useProducts } from '../api/queries/useProducts'
-import type { Product } from '../types/Product'
-import LoginRequiredDialog from './Home/components/LoginRequiredDialog'
+import { useProducts } from '../../api/queries/useProducts'
+import LoginRequiredDialog from './components/LoginRequiredDialog'
+import { pickRandom } from '../../utils/pickrandom'
+import { ProductCard } from './components/ProductCard'
+import { useCheckToken } from '../../api/queries/useAuth'
 
-const formatCLP = (value: number) =>
-    new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value)
 
-function pickRandom<T>(items: T[], count: number): T[] {
-    if (items.length <= count) return items
-    return [...items]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, count)
-}
 
-function ProductCard({ p, handleAgregar }: { p: Product, handleAgregar: () => void }) {
-    const agotado = p.stock <= 0
-    return (
-        <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
-            <div className="relative h-44 w-full">
-                <img
-                    src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop"
-                    alt={p.name}
-                    className="object-cover w-full h-full"
-                />
-                <span
-                    className={`absolute top-3 left-3 text-xs text-white px-2 py-1 rounded-full ${
-                        agotado ? 'bg-red-500/90' : 'bg-indigo-500/90'
-                    }`}
-                >
-                    {agotado ? 'Agotado' : 'En stock'}
-                </span>
-            </div>
-            <div className="p-4">
-                <h3 className="text-white font-semibold line-clamp-2">{p.name}</h3>
-                <p className="text-indigo-300 mt-2">{formatCLP(p.unitPrice)}</p>
-                <p className="text-indigo-200 text-xs mt-1 line-clamp-2">{p.description}</p>
-                <div className="mt-4 flex gap-2">
-                    <button
-                        className={`px-3 py-2 rounded-md text-sm font-medium ${
-                            agotado
-                                ? 'bg-gray-500/60 text-gray-300 cursor-not-allowed'
-                                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                        }`}
-                        disabled={agotado}
-                        onClick={handleAgregar}
-                    >
-                        Agregar
-                    </button>
-                    <button className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm">Ver</button>
-                </div>
-            </div>
-        </div>
-    )
-}
+
 
 export default function Home() {
+    
     const navigate = useNavigate()
+    const { data: checkToken } = useCheckToken()
+    const clientID = checkToken?.clientID as number
     const { data: products = [], isLoading: loading, error } = useProducts()
+    const [ showLoginRequired, setShowLoginRequired ] = useState(false) 
+
+
 
     const featuredUnder100 = useMemo(() => {
         const under100k = products.filter((p) => p.unitPrice < 100000)
@@ -69,14 +30,22 @@ export default function Home() {
         return pickRandom(between, 4)
     }, [products])
 
-    const [ showLoginRequired, setShowLoginRequired ] = useState(false) 
+
+    const handleAgregarProductoCarrito = () => {
+        if(!clientID) {
+            setShowLoginRequired(true)
+            return
+        }
+        // Manejar Agregar Producto
+    }
+
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 text-slate-100">
+        <div className="min-h-screen bg-linear-to-b from-black via-gray-900 to-gray-800 text-slate-100">
             <header className="max-w-7xl mx-auto px-6 py-12">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-cyan-400 rounded-full flex items-center justify-center text-xl font-bold text-black">E</div>
+                        <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-cyan-400 rounded-full flex items-center justify-center text-xl font-bold text-black">E</div>
                         <div>
                             <h1 className="text-2xl font-extrabold tracking-tight">ElectroPulse</h1>
                             <p className="text-sm text-indigo-300">Lo último en hardware y accesorios para PC</p>
@@ -96,7 +65,7 @@ export default function Home() {
 
                         <div className="mt-6 flex gap-4">
                             <Link to="/products">
-                                <button className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full text-black font-semibold shadow-lg">
+                                <button className="px-6 py-3 bg-linear-to-r from-indigo-500 to-cyan-400 rounded-full text-black font-semibold shadow-lg">
                                     Ver Colección
                                 </button>
                             </Link>
@@ -129,7 +98,7 @@ export default function Home() {
 
                     <div>
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600/30 via-transparent to-cyan-500/20 mix-blend-screen pointer-events-none" />
+                            <div className="absolute inset-0 bg-linear-to-tr from-indigo-600/30 via-transparent to-cyan-500/20 mix-blend-screen pointer-events-none" />
                             <img alt="hero" src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=5" className="w-full h-80 object-cover" />
                         </div>
                     </div>
@@ -156,7 +125,7 @@ export default function Home() {
                     {!loading && !error && featuredUnder100.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             {featuredUnder100.map((p) => (
-                                <ProductCard handleAgregar={() => setShowLoginRequired(true)} key={p.productID} p={p} />
+                                <ProductCard handleAgregar={handleAgregarProductoCarrito} key={p.productID} p={p} />
                             ))}
                         </div>
                     )}
@@ -183,7 +152,7 @@ export default function Home() {
                     {!loading && !error && featuredBetween100And200.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             {featuredBetween100And200.map((p) => (
-                                <ProductCard handleAgregar={() => setShowLoginRequired(true)} key={p.productID} p={p} />
+                                <ProductCard handleAgregar={handleAgregarProductoCarrito} key={p.productID} p={p} />
                             ))}
                         </div>
                     )}

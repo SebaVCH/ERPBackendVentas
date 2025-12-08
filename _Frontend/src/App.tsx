@@ -1,6 +1,6 @@
 import { BrowserRouter, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import './App.css'
-import Home from './pages/Home'
+import Home from './pages/Home/Home'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Login from './pages/Login'
@@ -89,12 +89,12 @@ export default function App() {
                     <Route path='/' element={<MainLayout />}>
                         <Route index element={<Home />} />
                         <Route path='products' element={<Products />} />
-                        <Route path='payment/success' element={<SuccessPayment />} />
-                        <Route path='payment/failure' element={<FailurePayment />} />
 
                         <Route element={<ProtectedRoute />}>
                             <Route path='mi-perfil' element={<UserProfile />} />
                             <Route path='mi-carrito' element={<Cart />}/>
+                            <Route path='payment/success' element={<SuccessPayment />} />
+                            <Route path='payment/failure' element={<FailurePayment />} />
                         </Route>
                     </Route>
         

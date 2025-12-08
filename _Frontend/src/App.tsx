@@ -16,6 +16,8 @@ import useSessionStore from './stores/useSessionStore'
 import { ErrorState } from './components/ErrorState'
 import { LoadingState } from './components/LoadingState'
 import Products from './pages/Products'
+import Details from './pages/Details'
+import ProductDetails from './pages/ProductDetails/ProductDetails'
 
 
 const MainLayout = () => {
@@ -89,6 +91,8 @@ export default function App() {
                     <Route path='/' element={<MainLayout />}>
                         <Route index element={<Home />} />
                         <Route path='products' element={<Products />} />
+                        <Route path='products/:id' element={<ProductDetails />} />
+                        <Route path='details' element={<Details />} />
 
                         <Route element={<ProtectedRoute />}>
                             <Route path='mi-perfil' element={<UserProfile />} />

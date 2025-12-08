@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { useProducts } from '../api/queries/useProducts'
+import { useProductDetails } from '../api/queries/useProductDetails'
 import type { Product } from '../types/Product'
 
 const formatCLP = (value: number) =>
@@ -13,7 +14,7 @@ function ProductCard({ product }: { product: Product }) {
         <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
             <div className="relative h-44 w-full">
                 <img
-                    src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop"
+                    src={product.imageUrl || '/1.png'}
                     alt={product.name}
                     className="object-cover w-full h-full"
                 />
@@ -48,9 +49,9 @@ function ProductCard({ product }: { product: Product }) {
                     >
                         Agregar
                     </button>
-                    <button className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm">
+                    <Link to={`/products/${product.productID}`} className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm hover:bg-white/5">
                         Ver
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>
@@ -60,6 +61,19 @@ function ProductCard({ product }: { product: Product }) {
 export default function Products() {
     const { search } = useLocation()
     const { data: products = [], isLoading: loading, error } = useProducts()
+    const { data: productDetails = [] } = useProductDetails()
+
+    // Combinar products con sus detalles (imagen y categoría)
+    const productsWithDetails = useMemo(() => {
+        return products.map(product => {
+            const detail = productDetails.find(d => d.productID === product.productID)
+            return {
+                ...product,
+                imageUrl: detail?.imageUrl,
+                category: detail?.category
+            }
+        })
+    }, [products, productDetails])
 
     const searchTerm = useMemo(() => {
         const params = new URLSearchParams(search)
@@ -67,22 +81,22 @@ export default function Products() {
     }, [search])
 
     const filtered = useMemo(() => {
-        if (!searchTerm) return products
-        return products.filter((p) =>
+        if (!searchTerm) return productsWithDetails
+        return productsWithDetails.filter((p) =>
             `${p.name} ${p.description}`.toLowerCase().includes(searchTerm)
         )
-    }, [products, searchTerm])
+    }, [productsWithDetails, searchTerm])
 
     const stats = useMemo(() => {
-        if (!products.length) return { total: '—', disponibles: '—', agotados: '—' }
-        const disponibles = products.filter((p) => p.stock > 0).length
-        const agotados = products.filter((p) => p.stock <= 0).length
+        if (!productsWithDetails.length) return { total: '—', disponibles: '—', agotados: '—' }
+        const disponibles = productsWithDetails.filter((p) => p.stock > 0).length
+        const agotados = productsWithDetails.filter((p) => p.stock <= 0).length
         return {
-            total: `${products.length}`,
+            total: `${productsWithDetails.length}`,
             disponibles: `${disponibles}`,
             agotados: `${agotados}`,
         }
-    }, [products])
+    }, [productsWithDetails])
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 text-slate-100">

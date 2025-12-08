@@ -5,4 +5,6 @@ export type Product = {
     unitPrice : number
     state: boolean
     stock: number
+    imageUrl?: string
+    category?: string
 }

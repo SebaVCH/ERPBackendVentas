@@ -1,5 +1,6 @@
 import type { Product } from "../../../types/Product"
 import { formatCLP } from "../../../utils/format"
+import { Link } from "react-router-dom"
 
 
 
@@ -9,7 +10,7 @@ export function ProductCard({ p, handleAgregar }: { p: Product, handleAgregar: (
         <div className="bg-linear-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
             <div className="relative h-44 w-full">
                 <img
-                    src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop"
+                    src={p.imageUrl || '/1.png'}
                     alt={p.name}
                     className="object-cover w-full h-full"
                 />
@@ -37,7 +38,9 @@ export function ProductCard({ p, handleAgregar }: { p: Product, handleAgregar: (
                     >
                         Agregar
                     </button>
-                    <button className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm">Ver</button>
+                    <Link to={`/products/${p.productID}`} className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm hover:bg-white/5">
+                        Ver
+                    </Link>
                 </div>
             </div>
         </div>

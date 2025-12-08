@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useProducts } from '../../api/queries/useProducts'
+import { useProductDetails } from '../../api/queries/useProductDetails'
 import LoginRequiredDialog from './components/LoginRequiredDialog'
 import { pickRandom } from '../../utils/pickrandom'
 import { ProductCard } from './components/ProductCard'
@@ -16,19 +17,30 @@ export default function Home() {
     const { data: checkToken } = useCheckToken()
     const clientID = checkToken?.clientID as number
     const { data: products = [], isLoading: loading, error } = useProducts()
+    const { data: productDetails = [] } = useProductDetails()
     const [ showLoginRequired, setShowLoginRequired ] = useState(false) 
 
-
+    // Combinar products con sus detalles (imagen y categoría)
+    const productsWithDetails = useMemo(() => {
+        return products.map(product => {
+            const detail = productDetails.find(d => d.productID === product.productID)
+            return {
+                ...product,
+                imageUrl: detail?.imageUrl,
+                category: detail?.category
+            }
+        })
+    }, [products, productDetails])
 
     const featuredUnder100 = useMemo(() => {
-        const under100k = products.filter((p) => p.unitPrice < 100000)
+        const under100k = productsWithDetails.filter((p) => p.unitPrice < 100000)
         return pickRandom(under100k, 4)
-    }, [products])
+    }, [productsWithDetails])
 
     const featuredBetween100And200 = useMemo(() => {
-        const between = products.filter((p) => p.unitPrice >= 100000 && p.unitPrice < 200000)
+        const between = productsWithDetails.filter((p) => p.unitPrice >= 100000 && p.unitPrice < 200000)
         return pickRandom(between, 4)
-    }, [products])
+    }, [productsWithDetails])
 
 
     const handleAgregarProductoCarrito = () => {

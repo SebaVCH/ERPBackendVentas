@@ -1,16 +1,35 @@
 import { Divider } from "primereact/divider"
 import { InputText } from "primereact/inputtext"
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { useState, type FormEvent } from "react"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "primereact/button"
+import { useLogin } from "../api/queries/useAuth"
+import { ProgressSpinner } from "primereact/progressspinner"
 
 export default function Login() {
 
+    const navigate = useNavigate()
     const [ email, setEmail ] = useState('')
     const [ password, setPassword ] = useState('')
+    const [ error, setError ] = useState<string | null>(null) 
+    const { mutate, isPending, isSuccess } = useLogin()
 
-    const handleLogin = () => {
-        console.log({email, password})
+
+    const handleLogin = (e : FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        if(!e.currentTarget.checkValidity()) return     
+        setError(null)
+        mutate({ email, password }, 
+        {
+            onSuccess: () => {
+                setTimeout(() => {
+                    navigate('/')
+                }, 1000)
+            },
+            onError: (error) => {
+                setError(error.response?.data.message ?? null)
+            }
+        })
     }
     
     return (
@@ -22,22 +41,33 @@ export default function Login() {
                             ¡Bienvenido de vuelta!
                         </h1>
                         <p className="text-gray-600">Ingresa a tu cuenta</p>
+                        <p className={`
+                            mt-4 min-h-6 font-semibold transition-all duration-100
+                            ${error ? "text-red-600 opacity-100" : ""}
+                            ${isSuccess ? "text-green-600 opacity-100" : ""}
+                        `}>
+                            { isSuccess ? "Login exitoso" : error }
+                        </p>
                     </div>
-                    <div className="space-y-6">
+                    
+                    <form className="space-y-6" onSubmit={handleLogin}>
                         <div className="flex flex-col gap-2">
                             <label htmlFor="email" className="font-semibold text-gray-700">
                                 Correo electrónico
                             </label>
 
-                            <div className="p-inputgroup flex1">
+                            <div className={`p-inputgroup flex1`}>
                                 <span className="p-inputgroup-addon">
                                     <i className="pi pi-envelope"></i>
                                 </span>
                                 <InputText
+                                    required
                                     id="email"
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={error ? "p-invalid" : ""}
+                                    onChange={(e) => {setEmail(e.target.value); setError(null)}}
+                                    onBlur={() => setError(null)}
                                     placeholder="tu@email.com"
                                 />
                             </div>
@@ -52,10 +82,12 @@ export default function Login() {
                                     <i className="pi pi-lock text-gray-400"></i>
                                 </span>
                                 <InputText
+                                    required
                                     id="password"
                                     type={"password"}
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    className={error ? "p-invalid" : ""}
+                                    onChange={(e) => {setPassword(e.target.value); setError(null)}}
                                     placeholder="••••••••"
                                     
                                 />
@@ -63,14 +95,28 @@ export default function Login() {
                         </div>
 
                         <Button
-                            onClick={handleLogin}
-                            severity='contrast'
-                            className="w-full hover:bg-gray-700! font-semibold! flex items-center justify-center gap-2"
+                            type="submit"
+                            severity={isSuccess ? 'success' : 'contrast'}
+                            className={`w-full min-h-[50px] font-semibold! flex items-center justify-center gap-2 transition-all duration-300 ease-in-out`}
+                            disabled={isPending}
                         >
-                            <i className="pi pi-sign-in"></i>
-                            Iniciar sesión
+                            
+                            { isPending ? 
+                                <ProgressSpinner style={{width: '25px', height: '20px'}} strokeWidth="8" animationDuration=".5s" />
+                                :
+                              isSuccess ? 
+                                <>
+                                    <i className="pi pi-check"></i>
+                                    Sesión válida
+                                </>
+                                :
+                                <>
+                                    <i className="pi pi-sign-in"></i>
+                                    Iniciar sesión
+                                </>
+                            }
                         </Button>
-                    </div>
+                    </form>
 
                     <Divider/>
 

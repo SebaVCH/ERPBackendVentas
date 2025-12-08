@@ -3,11 +3,11 @@ import { devtools, persist, createJSONStorage } from "zustand/middleware";
 
 type SessionState = {
   accessToken?: string
-  clientId?: string
+  clientId?: number
   name?: string
 
   setAccessToken: (token?: string) => void
-  setClientId: (id?: string) => void
+  setClientId: (id?: number) => void
   setName: (name?: string) => void
 
   clearSession: () => void
@@ -41,3 +41,4 @@ const useSessionStore = create<SessionState>()(
 );
 
 export default useSessionStore
+export const useAccessToken = () => useSessionStore(s => s.accessToken)

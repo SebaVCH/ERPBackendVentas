@@ -24,6 +24,7 @@ type CustomerUseCase interface {
 	GetCustomers(c *gin.Context)
 	GetCustomerByID(c *gin.Context) error
 	SendEmail(c *gin.Context)
+	UpdateCustomer(c *gin.Context)
 }
 
 type customerUseCase struct {
@@ -38,6 +39,13 @@ type SendEmailRequest struct {
 	Subject      string   `json:"subject" binding:"required"`
 	BodyHTML     string   `json:"body" binding:"required"`
 	BoletaVentas []int    `json:"boleta_ventas" binding:"required"`
+}
+
+type UpdateCustomerRequest struct {
+	Nombre   string `json:"nombre"`
+	Apellido string `json:"apellido"`
+	Email    string `json:"email"`
+	Telefono string `json:"telefono"`
 }
 
 func NewCustomerUseCase(customerRepo repository.CustomerRepository, salesRepo repository.SaleRepository, cartRepo repository.CartRepository) CustomerUseCase {
@@ -226,5 +234,41 @@ func (cu *customerUseCase) SendEmail(ctx *gin.Context) {
 	respondJSON(ctx, http.StatusOK, APIResponse{
 		Success: true,
 		Message: "corredo enviado",
+	})
+}
+
+func (cu customerUseCase) UpdateCustomer(c *gin.Context) {
+	var req UpdateCustomerRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondError(c, http.StatusBadRequest, err, "Request inválido")
+		return
+	}
+
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		respondError(c, http.StatusBadRequest, err, "id_cliente inválido")
+		return
+	}
+
+	customer, err := cu.CustomerRepo.GetCustomerByID(id)
+	if err != nil {
+		respondError(c, http.StatusInternalServerError, err, "error al obtener el cliente")
+		return
+	}
+
+	customer.Nombre = req.Nombre
+	customer.Apellido = req.Apellido
+	customer.Email = req.Email
+	customer.Telefono = req.Telefono
+
+	if err := cu.CustomerRepo.UpdateCustomer(customer); err != nil {
+		respondError(c, http.StatusInternalServerError, err, "error al actualizar el cliente")
+		return
+	}
+
+	respondJSON(c, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "cliente actualizado correctamente",
 	})
 }

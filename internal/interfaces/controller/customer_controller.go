@@ -23,6 +23,10 @@ func (cu *CustomerController) GetCustomerByID(c *gin.Context) {
 	cu.CustomerUseCase.GetCustomerByID(c)
 }
 
-func (cu * CustomerController) SendEmail(c *gin.Context) {
+func (cu *CustomerController) SendEmail(c *gin.Context) {
 	cu.CustomerUseCase.SendEmail(c)
+}
+
+func (cu *CustomerController) UpdateCustomer(c *gin.Context) {
+	cu.CustomerUseCase.UpdateCustomer(c)
 }

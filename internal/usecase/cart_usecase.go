@@ -141,11 +141,11 @@ func (c *cartUseCase) GetCartItems(ctx *gin.Context) {
 	}
 
 	cart, cartProducts, err := c.CartRepo.GetCartItems(id)
-	if err.Error() == "CARRITO_NOT_FOUND" {
-		respondJSON(ctx, http.StatusNotFound, APIResponse{ Success: false, Message: "carrito no encontrado para el cliente", Error: err.Error()})
-		return
-	}
-	
+	// if err.Error() == "CARRITO_NOT_FOUND" {
+	// 	respondJSON(ctx, http.StatusNotFound, APIResponse{ Success: false, Message: "carrito no encontrado para el cliente", Error: err.Error()})
+	// 	return
+	// }
+
 	if err != nil {
 		respondJSON(ctx, http.StatusInternalServerError, APIResponse{
 			Success: false,

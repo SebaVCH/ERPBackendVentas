@@ -17,4 +17,5 @@ func SetupCustomerRoutes(r *gin.Engine, protected *gin.RouterGroup) {
 	r.GET("/clientes", customerController.GetCustomers)
 	r.GET("/clientes/:id", customerController.GetCustomerByID)
 	r.POST("/clientes/send_email", customerController.SendEmail)
+	r.PUT("/clientes/:id", customerController.UpdateCustomer)
 }

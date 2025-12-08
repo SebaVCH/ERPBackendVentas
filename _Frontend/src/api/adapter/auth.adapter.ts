@@ -15,6 +15,20 @@ export type LoginBackendRequest = {
 
 export type Register = Omit<Client, 'id' | 'phone' | 'state' | 'address'> & { password : string }
 
+export type TokenContentBackend = {
+    cliente_id: number
+    email: string
+    expires_at: number
+    role: string
+}
+
+export type TokenContent = {
+    clientID: number
+    email: string
+    expiresAt: number
+    role: string
+}
+
 export function adaptRegisterRequest( req : Register, ): RegisterBackendRequest {
     return  {
         nombre: req.firstName,
@@ -28,5 +42,14 @@ export function adaptLoginRequest( email : string, password: string) : LoginBack
     return {
         email: email,
         password: password
+    }
+}
+
+export function adapterTokenContentResponse( tokenRes : TokenContentBackend): TokenContent {
+    return {
+        clientID: tokenRes.cliente_id,
+        email: tokenRes.email,
+        expiresAt: tokenRes.expires_at,
+        role: tokenRes.role
     }
 }

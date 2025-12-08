@@ -85,36 +85,39 @@ export default function AddressSection({ addresses, clientID } : AddressSectionP
                 </div>
 
                 <div className="space-y-4">
-                    {sortedAddresses.map((address) => (
-                        <Card key={address.id} className="bg-gray-50! shadow-xs! border! border-gray-200!">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <h3 className="font-bold text-gray-800">{address.label}</h3>
+                    { sortedAddresses.length === 0 ?
+                        <p>No tienes direcciones guardadas. ¡Ingresa una dirección!</p>
+                        :
+                        sortedAddresses.map((address) => (
+                            <Card key={address.id} className="bg-gray-50! shadow-xs! border! border-gray-200!">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <h3 className="font-bold text-gray-800">{address.label}</h3>
+                                        </div>
+                                        <p className="text-gray-700">{address.street}</p>
+                                        <p className="text-gray-600">{address.city}, {address.region}</p>
+                                        <p className="text-gray-600">CP: {address.postalCode}</p>
                                     </div>
-                                    <p className="text-gray-700">{address.street}</p>
-                                    <p className="text-gray-600">{address.city}, {address.region}</p>
-                                    <p className="text-gray-600">CP: {address.postalCode}</p>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            icon="pi pi-pencil"
+                                            rounded
+                                            outlined
+                                            severity="secondary"
+                                            onClick={() => handleOpenEdit(address)}
+                                        />
+                                        <Button
+                                            icon="pi pi-trash"
+                                            rounded
+                                            outlined
+                                            severity="danger"
+                                            onClick={() => handleDelete(address.id)}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button
-                                        icon="pi pi-pencil"
-                                        rounded
-                                        outlined
-                                        severity="secondary"
-                                        onClick={() => handleOpenEdit(address)}
-                                    />
-                                    <Button
-                                        icon="pi pi-trash"
-                                        rounded
-                                        outlined
-                                        severity="danger"
-                                        onClick={() => handleDelete(address.id)}
-                                    />
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
+                            </Card>
+                        ))}
                 </div>
             </Card>
 

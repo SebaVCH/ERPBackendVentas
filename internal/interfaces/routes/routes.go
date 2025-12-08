@@ -16,6 +16,7 @@ func SetupRouter() *gin.Engine {
 	SetupDirectionRoutes(router)
 	SetupAuthRoutes(router)
 	SetupPaymentRoutes(router)
+	SetupProductRoutes(router)
 
 	return router
 }

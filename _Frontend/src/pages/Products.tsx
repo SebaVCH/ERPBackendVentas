@@ -1,67 +1,29 @@
-import { useMemo } from 'react'
-import { useLocation, Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useProducts } from '../api/queries/useProducts'
 import { useProductDetails } from '../api/queries/useProductDetails'
 import type { Product } from '../types/Product'
+import { useCheckToken } from '../api/queries/useAuth'
+import { useAddItemToCart, useCart } from '../api/queries/useCart'
+import LoginRequiredDialog from './Home/components/LoginRequiredDialog'
+import { ProductCard } from './Home/components/ProductCard'
 
-const formatCLP = (value: number) =>
-    new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value)
-
-function ProductCard({ product }: { product: Product }) {
-    const agotado = product.stock <= 0
-
-    return (
-        <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
-            <div className="relative h-44 w-full">
-                <img
-                    src={product.imageUrl || '/1.png'}
-                    alt={product.name}
-                    className="object-cover w-full h-full"
-                />
-                <span
-                    className={`absolute top-3 left-3 text-xs text-white px-2 py-1 rounded-full ${
-                        agotado ? 'bg-red-500/90' : 'bg-indigo-500/90'
-                    }`}
-                >
-                    {agotado ? 'Agotado' : 'En stock'}
-                </span>
-            </div>
-
-            <div className="p-4">
-                <h3 className="text-white font-semibold line-clamp-2">{product.name}</h3>
-                <p className="text-indigo-200 text-sm mt-2 line-clamp-3">{product.description}</p>
-
-                <div className="mt-4 flex items-center justify-between">
-                    <p className="text-indigo-300 font-semibold">{formatCLP(product.unitPrice)}</p>
-                    <p className="text-xs text-indigo-300">
-                        Stock: <span className="font-semibold">{product.stock}</span>
-                    </p>
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                    <button
-                        className={`px-3 py-2 rounded-md text-sm font-medium ${
-                            agotado
-                                ? 'bg-gray-500/60 text-gray-300 cursor-not-allowed'
-                                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                        }`}
-                        disabled={agotado}
-                    >
-                        Agregar
-                    </button>
-                    <Link to={`/products/${product.productID}`} className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm hover:bg-white/5">
-                        Ver
-                    </Link>
-                </div>
-            </div>
-        </div>
-    )
-}
 
 export default function Products() {
+    const navigate = useNavigate()
     const { search } = useLocation()
     const { data: products = [], isLoading: loading, error } = useProducts()
     const { data: productDetails = [] } = useProductDetails()
+    const { data: checkToken } = useCheckToken()
+    const clientID = checkToken?.clientID as number
+    const { data: cart } = useCart(clientID)
+    const { mutate: mutateAddItemCart } = useAddItemToCart()
+    const [ showLoginRequired, setShowLoginRequired ] = useState(false) 
+    const productsInCarts = cart?.cartProducts
+
+    const isProductInCart = (productID: number) => {
+        return productsInCarts?.some((item) => item.productID === productID) || false
+    }
 
     // Combinar products con sus detalles (imagen y categoría)
     const productsWithDetails = useMemo(() => {
@@ -98,8 +60,44 @@ export default function Products() {
         }
     }, [productsWithDetails])
 
+    const handleAgregarProductoCarrito = (product : Product) => {
+        if(!clientID) {
+            setShowLoginRequired(true)
+            return
+        }
+        if(isProductInCart(product.productID)) {
+            navigate('/mi-carrito')
+            return
+        }
+        console.log("AAAA")
+        mutateAddItemCart({
+            clientID: clientID,
+            productID: product.productID,
+            amount: 1,
+            unitPrice: product.unitPrice,
+            product: {
+                productID: 0,
+                name: '',
+                description: '',
+                unitPrice: 0,
+                state: false,
+                stock: 0,
+                imageUrl: undefined,
+                category: undefined
+            }
+        }, {
+            onSuccess: (data) => {
+                console.log("Se agrego correctamente:  ",data)
+            },
+            onError: (error) => {
+                console.log(error)
+            }
+        })
+    }
+
+
     return (
-        <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 text-slate-100">
+        <div className="min-h-screen bg-linear-to-b from-black via-gray-900 to-gray-800 text-slate-100">
             <div className="max-w-7xl mx-auto px-6 py-12">
                 <section className="grid md:grid-cols-5 gap-10 items-center">
                     <div className="md:col-span-3">
@@ -110,7 +108,7 @@ export default function Products() {
                             Explora hardware, redes y periféricos listos para tu setup.
                         </p>
                         <div className="mt-6 flex gap-3">
-                            <span className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-cyan-400 text-black rounded-full text-sm font-semibold shadow-lg">
+                            <span className="px-4 py-2 bg-linear-to-r from-indigo-500 to-cyan-400 text-black rounded-full text-sm font-semibold shadow-lg">
                                 Stock en vivo
                             </span>
                             <span className="px-4 py-2 border border-white/10 text-indigo-200 rounded-full text-sm">
@@ -168,13 +166,18 @@ export default function Products() {
                             )}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {filtered.map((product) => (
-                                    <ProductCard key={product.productID} product={product} />
+                                    <ProductCard isInCart={isProductInCart(product.productID)}  key={product.productID} p={product} handleAgregar={() => handleAgregarProductoCarrito(product)} />
                                 ))}
                             </div>
                         </>
                     )}
                 </section>
             </div>
+            <LoginRequiredDialog 
+                visible={showLoginRequired} 
+                onHide={() => setShowLoginRequired(false)} 
+                onLogin={() => navigate('/login', { replace: true })}            
+            />
         </div>
     )
 }

@@ -12,6 +12,9 @@ export function useAddItemToCart() {
         mutationFn: (newItem : CartItem) => addCartItem(newItem),
         onSuccess: () => {
             queryClients.invalidateQueries({ queryKey: ['cart'] })
+        },
+        onError: (e) => {
+            console.log(e)
         }
     })
 }
@@ -31,6 +34,9 @@ export function useDeleteCartItem() {
         mutationFn: (cartItem : CartItem) => removeCartItem(cartItem),
         onSuccess: () => {
             queryClients.invalidateQueries({ queryKey: ['cart'] })
+        },
+        onError: (e) => {
+            console.log(e)
         }
     })
 }

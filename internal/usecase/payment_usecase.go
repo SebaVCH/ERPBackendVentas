@@ -131,18 +131,20 @@ func (pu *paymentUsecase) PaymentPendingHandler(c *gin.Context) {
 func (pu *paymentUsecase) PaymentFailureHandler(c *gin.Context) {
 	paymentID, err := pu.parsePaymentID(c.Query("payment_id"))
 	if err != nil {
-		pu.redirectToFailure(c, "payment id no válido", 0)
+		// pu.redirectToFailure(c, "payment id no válido", 0)
 		return
 	}
 
 	detail, err := pu.PayRepo.GetPaymentDetail(paymentID)
 	if err != nil {
 		log.Printf("Error getting payment detail for ID %d: %v", paymentID, err)
-		pu.redirectToFailure(c, "Error al obtener detalles del pago", paymentID)
+		// pu.redirectToFailure(c, "Error al obtener detalles del pago", paymentID)
 		return
 	}
 
-	pu.redirectToFailure(c, detail.StatusDetail, paymentID)
+	fmt.Printf("%+v", detail)
+
+	// pu.redirectToFailure(c, detail.StatusDetail, paymentID)
 }
 
 func (pu *paymentUsecase) PaymentSuccessHandler(c *gin.Context) {

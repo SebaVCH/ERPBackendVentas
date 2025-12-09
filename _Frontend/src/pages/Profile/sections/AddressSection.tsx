@@ -95,7 +95,7 @@ export default function AddressSection({ addresses, clientID } : AddressSectionP
                                         <div className="flex items-center gap-2 mb-2">
                                             <h3 className="font-bold text-gray-800">{address.label}</h3>
                                         </div>
-                                        <p className="text-gray-700">{address.street}</p>
+                                        <p className="text-gray-700">{address.street},{address.number}</p>
                                         <p className="text-gray-600">{address.city}, {address.region}</p>
                                         <p className="text-gray-600">CP: {address.postalCode}</p>
                                     </div>

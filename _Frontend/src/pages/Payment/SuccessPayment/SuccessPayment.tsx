@@ -22,15 +22,16 @@ export default function SuccessPayment() {
     const { data: address, isLoading: addressLoading } = useAddressByID(addressID)
     const deliveryAddress = address ? `${address.street} ${address.number}` : "Dirección no disponible"
     
+
     const { subtotal, iva, total } = useMemo(() => {
         if (!orderDetail) 
             return { subtotal: 0, iva: 0, total: 0 }
 
-        const subtotalCalc = orderDetail.orderItems.reduce((sum, item) => sum + item.unitPrice * item.amount, 0)
+        const subtotalCalc = Math.round(orderDetail.orderItems.reduce((sum, item) => sum + item.unitPrice * item.amount, 0))
         return {
             subtotal: subtotalCalc,
-            iva: subtotalCalc * 0.19,
-            total: subtotalCalc * 1.19
+            iva: Math.round(subtotalCalc * 0.19),
+            total: Math.round(subtotalCalc * 1.19)
         }
     }, [orderDetail])
 

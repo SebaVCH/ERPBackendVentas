@@ -87,7 +87,7 @@ func (c *Client) CreatePreference(amount float64, title, externalRef, customerEm
 			Pending: backURL + "/payments/pending",
 		},
 		Payer: &Payer{
-			Email: customerEmail,
+			Email: "test_user_123456@testuser.com",
 		},
 	}
 

@@ -14,6 +14,7 @@ export async function getCartItems( clientID : number): Promise<Cart> {
 
 export async function addCartItem( newItem : CartItem ) {
     const payload = adaptCartItemRequest(newItem)
+    console.log("payload: ", payload)
     const { data } = await axiosInstance.post(`${RESOURCE_NAME}/item`, payload)
     return data
 } 

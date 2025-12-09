@@ -62,11 +62,22 @@ export default function Home() {
             navigate('/mi-carrito')
             return
         }
+        console.log("AAAA")
         mutateAddItemCart({
             clientID: clientID,
             productID: product.productID,
             amount: 1,
-            unitPrice: product.unitPrice
+            unitPrice: product.unitPrice,
+            product: {
+                productID: 0,
+                name: '',
+                description: '',
+                unitPrice: 0,
+                state: false,
+                stock: 0,
+                imageUrl: undefined,
+                category: undefined
+            }
         }, {
             onSuccess: (data) => {
                 console.log("Se agrego correctamente:  ",data)

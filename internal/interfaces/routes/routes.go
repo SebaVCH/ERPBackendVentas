@@ -10,13 +10,14 @@ func SetupRouter() *gin.Engine {
 	router.Use(middleware.CORSMiddleware())
 	protected := router.Group("")
 	protected.Use(middleware.JWTMiddleware())
-	SetupCustomerRoutes(router,protected)
+	SetupCustomerRoutes(router, protected)
 	SetupSaleRoutes(router)
 	SetupCartRoutes(router)
 	SetupDirectionRoutes(router)
 	SetupAuthRoutes(router)
 	SetupPaymentRoutes(router)
 	SetupProductRoutes(router)
+	SetupEmployeeRoutes(router)
 
 	return router
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getOrderDetail } from "../services/order.service";
+import { getOrderDetail, getOrdersByClientID } from "../services/order.service";
 
 
 
@@ -11,3 +11,11 @@ export function useOrderDetail( orderID : number) {
         enabled: !!orderID
     })
 } 
+
+export function useOrderByClientID( clientID : number) {
+    return useQuery({
+        queryKey: ['orders_client', clientID],
+        queryFn: () => getOrdersByClientID(clientID),
+        enabled: !!clientID
+    })
+}

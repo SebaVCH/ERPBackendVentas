@@ -15,12 +15,12 @@ export async function getCartItems( clientID : number): Promise<Cart> {
 export async function addCartItem( newItem : CartItem ) {
     const payload = adaptCartItemRequest(newItem)
     const { data } = await axiosInstance.post(`${RESOURCE_NAME}/item`, payload)
-    return data?.data
+    return data
 } 
 
 export async function removeCartItem( item : CartItem) {
     const payload = adaptCartItemRequest(item)
-    const { data } = await axiosInstance.put(`${RESOURCE_NAME}/item`, payload)
+    const { data } = await axiosInstance.put(`${RESOURCE_NAME}/item/remove`, payload)
     return data.data
 }
 

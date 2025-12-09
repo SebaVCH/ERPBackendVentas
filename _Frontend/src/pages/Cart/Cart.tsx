@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { DataView } from "primereact/dataview";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { createCheckout } from "../api/services/payment.service";
-import ConfirmationCheckoutDialog from "./Cart/ConfirmationCheckoutDialog";
-import { useClientID } from "../api/queries/useClients";
-import { useCart } from "../api/queries/useCart";
-import { ErrorState } from "../components/ErrorState";
-import { LoadingState } from "../components/LoadingState";
+import { createCheckout } from "../../api/services/payment.service";
+import { useClientID } from "../../api/queries/useClients";
+import { useAddItemToCart, useCart, useDeleteCartItem } from "../../api/queries/useCart";
+import { ErrorState } from "../../components/ErrorState";
+import { LoadingState } from "../../components/LoadingState";
+import ConfirmationCheckoutDialog from "./components/ConfirmationCheckoutDialog";
 
 interface Product {
-    id: string;
+    id: number;
     code: string;
     name: string;
     description: string;
@@ -22,25 +22,25 @@ interface Product {
 export default function Cart() {
     const [products, setProducts] = useState<Product[]>([
         {
-            id: "1",
+            id: 1,
             code: "PROD-010",
             name: "Tarjeta Gráfica NVIDIA RTX 4060",
             description: "Laptop con procesador Intel i5, 8GB RAM, 256GB SSD",
             image: "https://foreign.cl/wp-content/uploads/2024/01/https___media-prod-use-1.mirakl.webp",
             price: 449990,
-            quantity: 1
+            quantity: 1,
         },
         {
-            id: "2",
+            id: 2,
             code: "PROD-011",
             name: "Placa Madre ASUS TUF B550M-PLUS",
             description: "Mouse inalámbrico ergonómico de alta precisión",
             image: "https://m.media-amazon.com/images/I/81rgqqBI0FL._AC_SL1500_.jpg",
             price: 159990,
-            quantity: 2
+            quantity: 2,
         },
         {
-            id: "3",
+            id: 3,
             code: "PROD-012",
             name: "Procesador AMD Ryzen 7 5800X",
             description: "Teclado mecánico con switches azules y retroiluminación RGB",
@@ -51,28 +51,42 @@ export default function Cart() {
     ]);
 
     const clientID = useClientID() as number
-    const { data, error, isLoading } = useCart(clientID)
-
+    const { data: cart, error, isLoading } = useCart(clientID)
+    const { mutate: mutateAddItemCart, isPending: isLoadingAddItem } = useAddItemToCart()
+    const { mutate: mutateChangeItemCart, isPending: isLoadingChangeItem } = useDeleteCartItem() 
+    
     useEffect(() => {
-        console.log(data)
+        console.log(cart)
         console.log(error?.status)
-    }, [data, error])
+    }, [cart, error])
 
 
-    const increaseQuantity = (productId: string) => {
-        setProducts(products.map(p =>
-            p.id === productId ? { ...p, quantity: p.quantity + 1 } : p
-        ));
+    const increaseQuantity = (product : Product) => {
+        mutateAddItemCart({
+            productID: product.id,
+            clientID: clientID,
+            amount: 1,
+            unitPrice: product.price
+        })
+    }
+
+
+    const decreaseQuantity = (product : Product) => {
+        mutateChangeItemCart({
+            productID: product.id,
+            clientID: clientID,
+            amount: 1,
+            unitPrice: product.price
+        })
     };
 
-    const decreaseQuantity = (productId: string) => {
-        setProducts(products.map(p =>
-            p.id === productId ? { ...p, quantity: Math.max(1, p.quantity - 1) } : p
-        ));
-    };
-
-    const removeProduct = (productId: string) => {
-        setProducts(products.filter(p => p.id !== productId));
+    const removeProduct = (product : Product) => {
+        mutateChangeItemCart({
+            productID: product.id,
+            clientID: clientID,
+            amount: product.quantity,
+            unitPrice: product.price
+        })
     };
 
     const getTotalItems = () => {
@@ -116,7 +130,7 @@ export default function Cart() {
                                 rounded
                                 outlined
                                 severity="secondary"
-                                onClick={() => decreaseQuantity(product.id)}
+                                onClick={() => decreaseQuantity(product)}
                                 disabled={product.quantity <= 1}
                                 size="small"
                             />
@@ -128,7 +142,7 @@ export default function Cart() {
                                 rounded
                                 outlined
                                 severity="secondary"
-                                onClick={() => increaseQuantity(product.id)}
+                                onClick={() => increaseQuantity(product)}
                                 size="small"
                             />
                         </div>
@@ -138,7 +152,7 @@ export default function Cart() {
                             rounded
                             outlined
                             severity="danger"
-                            onClick={() => removeProduct(product.id)}
+                            onClick={() => removeProduct(product)}
                             tooltip="Eliminar producto"
                             tooltipOptions={{ position: 'top' }}
                         />
@@ -152,7 +166,7 @@ export default function Cart() {
 
     const handleCreateCheckout = async () => {
         const res = await createCheckout({
-            clientID: 1,
+            clientID: clientID,
             addressID: 10,
             amount: getTotalPrice(),
             title: "e-commerce"

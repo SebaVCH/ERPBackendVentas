@@ -5,7 +5,6 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import Cart from './pages/Cart'
 import UserProfile from './pages/Profile'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import FailurePayment from './pages/Payment/FailrutePayment/FailurePayment'
@@ -18,6 +17,7 @@ import { LoadingState } from './components/LoadingState'
 import Products from './pages/Products'
 import Details from './pages/Details'
 import ProductDetails from './pages/ProductDetails/ProductDetails'
+import Cart from './pages/Cart/Cart'
 
 
 const MainLayout = () => {

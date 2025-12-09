@@ -1,6 +1,6 @@
 import { useState } from "react"
-import GenericDialog from "../../components/Dialog"
 import { ProgressSpinner } from 'primereact/progressspinner';
+import GenericDialog from "../../../components/Dialog";
         
 
 type ConfirmationCheckoutDialogProps = {

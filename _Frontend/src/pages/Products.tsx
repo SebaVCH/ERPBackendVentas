@@ -104,17 +104,8 @@ export default function Products() {
                         <p className="text-sm uppercase text-indigo-300 font-semibold tracking-wide">Catálogo</p>
                         <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">Todos los productos</h1>
                         <p className="mt-4 text-indigo-200 max-w-2xl">
-                            Estilo futurista del Home, pero con la lista completa desde el backend.
                             Explora hardware, redes y periféricos listos para tu setup.
                         </p>
-                        <div className="mt-6 flex gap-3">
-                            <span className="px-4 py-2 bg-linear-to-r from-indigo-500 to-cyan-400 text-black rounded-full text-sm font-semibold shadow-lg">
-                                Stock en vivo
-                            </span>
-                            <span className="px-4 py-2 border border-white/10 text-indigo-200 rounded-full text-sm">
-                                Envíos 24-48h
-                            </span>
-                        </div>
                     </div>
 
                     <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm">

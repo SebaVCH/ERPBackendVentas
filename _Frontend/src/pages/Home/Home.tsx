@@ -109,8 +109,8 @@ export default function Home() {
             <main className="max-w-7xl mx-auto px-6 pb-20">
                 <section className="grid md:grid-cols-2 gap-8 items-center mb-12">
                     <div>
-                        <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">Diseño futurista. Rendimiento real.</h2>
-                        <p className="mt-4 text-indigo-200 max-w-xl">Explora nuestra selección curada de componentes y periféricos pensados para gamers, creadores y profesionales de alto rendimiento. Tecnología que se ve tan bien como rinde.</p>
+                        <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">Tecnología que impulsa tu mundo.</h2>
+                        <p className="mt-4 text-indigo-200 max-w-xl">Explora productos diseñados para máximo desempeño.</p>
 
                         <div className="mt-6 flex gap-4">
                             <Link to="/products">
@@ -136,7 +136,7 @@ export default function Home() {
                     <div>
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                             <div className="absolute inset-0 bg-linear-to-tr from-indigo-600/30 via-transparent to-cyan-500/20 mix-blend-screen pointer-events-none" />
-                            <img alt="hero" src="/venta_hardware.jpg" className="w-full h-80 object-cover scale-110" />
+                            <img alt="hero" src="/image.png" className="w-full h-80 object-cover scale-110" />
                         </div>
                     </div>
                 </section>

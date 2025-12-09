@@ -9,13 +9,14 @@ import { useAddressByID } from "../../../api/queries/useAddress";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMemo } from "react";
 import { AdditionalInfo } from "../../../components/AditionalInfo";
+import { useClientID } from "../../../api/queries/useClients";
 
 export default function SuccessPayment() {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const orderIdParam = searchParams.get("order_id")
     const orderId = Number(orderIdParam)
-    
+    const clientID = useClientID()
     const { data: orderDetail, error: orderError, isLoading: orderLoading, isSuccess: orderSuccess } = useOrderDetail(orderId)
     const addressID = orderDetail?.order.AddressID ?? 0
     
@@ -42,7 +43,7 @@ export default function SuccessPayment() {
     if (orderLoading || addressLoading) 
         return <LoadingState message="Cargando información de tu orden..." />
     
-    if (!orderSuccess || orderError) 
+    if (!orderSuccess || orderError || orderDetail.order.clientID != clientID) 
         return <ErrorState title="Error al cargar la orden" message="No pudimos obtener la información del pedido. Intenta nuevamente más tarde." />
     
     return (

@@ -10,13 +10,7 @@ interface OrderPriceSummaryProps {
     onGoHome?: () => void;
 }
 
-export function OrderPriceSummary({ 
-    subtotal, 
-    iva, 
-    total,
-    onViewOrders,
-    onGoHome
-}: OrderPriceSummaryProps) {
+export function OrderPriceSummary({ subtotal, iva, total, onViewOrders, onGoHome }: OrderPriceSummaryProps) {
     return (
         <Card className="shadow-lg sticky top-4">
             <h2 className="text-xl font-bold text-gray-800 mb-6">
@@ -54,7 +48,7 @@ export function OrderPriceSummary({
 
                 <Divider />
 
-                <div className="flex flex-col space-y-3 gap-2">                    
+                <div className="flex flex-col space-y-3 gap-2">     
                     <Button
                         label="Ver mis pedidos"
                         icon="pi pi-list"

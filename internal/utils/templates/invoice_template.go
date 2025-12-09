@@ -16,7 +16,7 @@ type Empresa struct {
 
 type Cliente struct {
 	Nombre    string
-	RUT       string
+	Telefono  string
 	Direccion string
 }
 

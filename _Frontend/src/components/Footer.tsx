@@ -16,7 +16,7 @@ export default function Footer() {
                     <div className="text-center">
                         <p className="text-lg font-semibold mb-2">Tus productos tecnologicos probados en animales.</p>
                         <p className="text-sm text-gray-400">
-                            © {new Date().getFullYear()} e-commerce vegano digital ecofriendly mediafire no lo descargo porque ya lo tengo instalado. Todos los derechos reservados.
+                            © {new Date().getFullYear()} ElectroPulse E-Store. Todos los derechos reservados.
                         </p>
                     </div>
 

@@ -50,6 +50,10 @@ export default function Cart() {
         return Math.round(productItems.reduce((sum, p) => sum + (p.unitPrice * p.amount), 0));
     }
 
+    const total = getTotalPrice();
+    const subtotal = total / 1.19;
+    const iva = total - subtotal;
+
     const listTemplate = (items: CartItem[]) => {
         if (!items || items.length === 0) {
             return (
@@ -177,7 +181,7 @@ export default function Cart() {
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="text-gray-600">Subtotal</span>
                                         <span className="font-semibold">
-                                            ${getTotalPrice().toLocaleString("es-CL")}
+                                            ${subtotal.toLocaleString("es-CL")}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center mb-2">
@@ -187,13 +191,13 @@ export default function Cart() {
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="text-gray-600">IVA <span className="font-semibold text-red-600">(19%)</span></span>
                                         <span className="font-semibold">
-                                            ${(getTotalPrice()*0.19).toLocaleString("es-CL")}
+                                            ${iva.toLocaleString("es-CL")}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center text-xl font-bold pt-4 border-t">
                                         <span>Total</span>
                                         <span className="text-blue-600">
-                                            ${((getTotalPrice() + getTotalPrice()*0.19)).toLocaleString("es-CL")}
+                                            ${total.toLocaleString("es-CL")}
                                         </span>
                                     </div>
                                 </div>

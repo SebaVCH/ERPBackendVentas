@@ -160,7 +160,7 @@ hr {
 
 <table class="data-table">
     <tr><td><strong>Nombre:</strong> {{ .Cliente.Nombre }}</td></tr>
-    <tr><td><strong>RUT:</strong> {{ .Cliente.RUT }}</td></tr>
+    <tr><td><strong>RUT:</strong> {{ .Cliente.Telefono }}</td></tr>
     <tr><td><strong>Dirección:</strong> {{ .Cliente.Direccion }}</td></tr>
 </table>
 
@@ -183,7 +183,7 @@ hr {
     <tr>
         <td>{{ .Descripcion }}</td>
         <td>{{ .Cantidad }}</td>
-        <td>${{ .PrecioUnitario }}</td>
+        <td>${{ .PrecioVenta }}</td>
         <td>${{ .Total }}</td>
     </tr>
     {{end}}

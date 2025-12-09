@@ -1,6 +1,8 @@
+import { ProgressSpinner } from "primereact/progressspinner"
 import type { Product } from "../../../types/Product"
 import { formatCLP } from "../../../utils/format"
 import { Link } from "react-router-dom"
+import {  useState } from "react"
 
 interface ProductCardProps {
     p: Product
@@ -10,7 +12,18 @@ interface ProductCardProps {
 
 export function ProductCard({ p, handleAgregar, isInCart = false }: ProductCardProps) {
     const agotado = p.stock <= 0
-    
+    const [ isLoading, setIsLoading ] = useState(false)
+
+
+    const handleClickAgregar = () => {
+        setIsLoading(true)
+        handleAgregar()
+        setTimeout(() => {
+            setIsLoading(false)
+        }, 1500)
+
+    }
+
     return (
         <div className="bg-linear-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
             <div className="relative h-44 w-full">
@@ -51,10 +64,10 @@ export function ProductCard({ p, handleAgregar, isInCart = false }: ProductCardP
                                 ? 'bg-white/10 text-green-300 border border-green-500/30 hover:bg-white/15 cursor-pointer'
                                 : 'bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer'
                         }`}
-                        disabled={agotado}
-                        onClick={handleAgregar}
+                        disabled={agotado || isLoading}
+                        onClick={handleClickAgregar}
                     >
-                        {isInCart ? 'Ver Carrito' : 'Agregar'}
+                        { isLoading ? <ProgressSpinner  style={{width: '25px', height: '20px'}} strokeWidth="8" animationDuration=".5s" /> : <> {isInCart ? 'Ver Carrito' : 'Agregar'} </>}
                     </button>
                     
                     <Link to={`/products/${p.productID}`} className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm hover:bg-white/5">

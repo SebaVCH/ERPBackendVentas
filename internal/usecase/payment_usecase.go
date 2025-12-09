@@ -23,11 +23,12 @@ type PaymentUsecase interface {
 }
 
 type paymentUsecase struct {
-	PayRepo       repository.PaymentRepository
-	CartRepo      repository.CartRepository
-	SaleRepo      repository.SaleRepository
-	CustomerRepo  repository.CustomerRepository
-	DirectionRepo repository.DirectionRepository
+	PayRepo         repository.PaymentRepository
+	CartRepo        repository.CartRepository
+	SaleRepo        repository.SaleRepository
+	CustomerRepo    repository.CustomerRepository
+	DirectionRepo   repository.DirectionRepository
+	CustomerUseCase CustomerUseCase
 }
 
 const (
@@ -37,13 +38,14 @@ const (
 	PaymentConditionFull  = "Pago Completo"
 )
 
-func NewPaymentUsecase(payRepo repository.PaymentRepository, cartRepo repository.CartRepository, saleRepo repository.SaleRepository, customerRepo repository.CustomerRepository, directionRepo repository.DirectionRepository) PaymentUsecase {
+func NewPaymentUsecase(cusUseCase CustomerUseCase, payRepo repository.PaymentRepository, cartRepo repository.CartRepository, saleRepo repository.SaleRepository, customerRepo repository.CustomerRepository, directionRepo repository.DirectionRepository) PaymentUsecase {
 	return &paymentUsecase{
-		PayRepo:       payRepo,
-		CartRepo:      cartRepo,
-		SaleRepo:      saleRepo,
-		CustomerRepo:  customerRepo,
-		DirectionRepo: directionRepo,
+		PayRepo:         payRepo,
+		CartRepo:        cartRepo,
+		SaleRepo:        saleRepo,
+		CustomerRepo:    customerRepo,
+		DirectionRepo:   directionRepo,
+		CustomerUseCase: cusUseCase,
 	}
 }
 
@@ -202,13 +204,18 @@ func (pu *paymentUsecase) PaymentSuccessHandler(c *gin.Context) {
 		return
 	}
 
+	if len(items) == 0 {
+		pu.redirectToFailure(c, "carrito vacio", paymentID)
+		return
+	}
+
 	// Construir detalles desde los items del carrito y calcular total
 	var detalles []domain.DetalleVenta
 	var total float64
 	for _, it := range items {
 		detalles = append(detalles, domain.DetalleVenta{
-			IDProducto: it.IDProducto,
-			Cantidad:   it.Cantidad,
+			IDProducto:  it.IDProducto,
+			Cantidad:    it.Cantidad,
 			PrecioVenta: it.PrecioVenta,
 		})
 		total += float64(it.Cantidad) * it.PrecioVenta
@@ -229,6 +236,22 @@ func (pu *paymentUsecase) PaymentSuccessHandler(c *gin.Context) {
 		pu.redirectToFailure(c, err.Error(), paymentID)
 		return
 	}
+
+	client, err := pu.CustomerRepo.GetCustomerByID(IDCliente)
+	if err != nil {
+		pu.redirectToFailure(c, err.Error(), paymentID)
+		return
+	}
+
+	err = pu.CustomerUseCase.SendEmailDetached(SendEmailRequest{
+		ClientID:     IDCliente,
+		To:           []string{client.Email},
+		Subject:      fmt.Sprintf("Boleta #%d", venta.IDVenta),
+		BodyHTML:     `<p>Muchas gracias por realizar la compra. Te adjuntamos la boleta de la venta. <br/> Saludos!</p>`,
+		BoletaVentas: []int{venta.IDVenta},
+	})
+
+	fmt.Printf("ERROR DEL EMAIL: %+v", err)
 
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("%s/payment/success?order_id=%d", os.Getenv("HOST_FRONTEND"), venta.IDVenta))
 }

@@ -62,7 +62,8 @@ export default function Register() {
             firstName: formData.firstName,
             lastName: formData.lastName,
             email: formData.email,
-            password: formData.password
+            password: formData.password,
+            createdAt: new Date()
         }, 
         {
             onSuccess: () => {
@@ -233,7 +234,7 @@ export default function Register() {
                     </div>
                 </div>
                 <p className="text-center text-sm text-gray-600 mt-6">
-                    ERP-SI2 e-commerce vegano
+                    ElectroPulse E-Store
                 </p>
             </div>
         </div>

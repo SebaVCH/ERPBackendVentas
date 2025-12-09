@@ -120,16 +120,22 @@ export default function Home() {
                             </Link>
                         </div>
 
-                        <div className="mt-8 grid grid-cols-3 gap-3">
+                        <div className="mt-8 grid grid-cols-2 gap-3">
 
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center">🔒</div>
+                                <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center"><i className='pi pi-lock text-amber-500'></i></div>
                                 <div className="text-sm">
                                     <div className="font-semibold">Pago seguro</div>
                                     <div className="text-indigo-300 text-xs">Protección total</div>
                                 </div>
                             </div>
-
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center"><i className='pi pi-gift text-purple-400'></i></div>
+                                <div className="text-sm">
+                                    <div className="font-semibold">Envíos gratis</div>
+                                    <div className="text-indigo-300 text-xs">Promoción por gran apertura</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -215,18 +221,6 @@ export default function Home() {
                     </div>
                 </section>
             </main>
-
-            <footer className="border-t border-white/6 mt-12 py-8">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="text-sm text-indigo-300">© {new Date().getFullYear()} ElectroPulse — Accesorios y componentes</div>
-                    <div className="flex gap-4 text-indigo-200">
-                        <a>Privacidad</a>
-                        <a>Términos</a>
-                        <a>Soporte</a>
-                    </div>
-                </div>
-            </footer>
-
             <LoginRequiredDialog 
                 visible={showLoginRequired} 
                 onHide={() => setShowLoginRequired(false)} 

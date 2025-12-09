@@ -130,7 +130,7 @@ export default function Login() {
                     </div>
                 </div>
                 <p className="text-center text-sm text-gray-600 mt-6">
-                    ERP-SI2 e-commerce vegano
+                    ElectroPulse E-Store
                 </p>
             </div>
         </div>

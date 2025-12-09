@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -25,6 +27,7 @@ type CustomerUseCase interface {
 	GetCustomerByID(c *gin.Context) error
 	SendEmail(c *gin.Context)
 	UpdateCustomer(c *gin.Context)
+	SendEmailDetached(req SendEmailRequest) error
 }
 
 type customerUseCase struct {
@@ -150,7 +153,7 @@ func (cu *customerUseCase) SendEmail(ctx *gin.Context) {
 
 	cliente := &templates.Cliente{
 		Nombre:    customer.Nombre + " " + customer.Apellido,
-		RUT:       customer.Telefono,
+		Telefono:  customer.Telefono,
 		Direccion: customer.Direccion,
 	}
 
@@ -186,11 +189,14 @@ func (cu *customerUseCase) SendEmail(ctx *gin.Context) {
 			items = append(items, item)
 		}
 
+		subtotal := venta.Total / 1.19
+		iva := venta.Total - subtotal
+
 		resumen := templates.Resumen{
-			Subtotal:      strconv.FormatFloat(venta.Total, 'f', -1, 64),
+			Subtotal:      strconv.FormatFloat(subtotal, 'f', -1, 64),
 			PorcentajeIVA: 19,
-			MontoIVA:      strconv.FormatFloat(venta.Total*0.19, 'f', -1, 64),
-			Total:         strconv.FormatFloat(venta.Total*1.19, 'f', -1, 64),
+			MontoIVA:      strconv.FormatFloat(iva, 'f', -1, 64),
+			Total:         strconv.FormatFloat(venta.Total, 'f', -1, 64),
 		}
 
 		data := templates.BoletaData{
@@ -271,4 +277,106 @@ func (cu customerUseCase) UpdateCustomer(c *gin.Context) {
 		Success: true,
 		Message: "cliente actualizado correctamente",
 	})
+}
+
+func (cu *customerUseCase) SendEmailDetached(req SendEmailRequest) error {
+
+	customer, err := cu.CustomerRepo.GetCustomerByID(req.ClientID)
+	if err != nil {
+		return fmt.Errorf("error obteniendo cliente: %w", err)
+	}
+
+	empresa := &templates.Empresa{
+		Nombre:    "COMERCIAL SI2 SPA",
+		RUT:       "12.345.678-9",
+		Direccion: "Av. Siempre Viva 1234 - Coquimbo",
+		Giro:      "Servicio Retail",
+		Email:     "erpventassi@gmail.com",
+		Telefono:  "+56 9 1234 5678",
+	}
+
+	cliente := &templates.Cliente{
+		Nombre:    customer.Nombre + " " + customer.Apellido,
+		Telefono:  customer.Telefono,
+		Direccion: customer.Direccion,
+	}
+
+	var pdfBytes []utils.Attachment
+
+	for _, idVenta := range req.BoletaVentas {
+
+		boleta := &templates.Boleta{
+			TipoDocumento: "BOLETA ELECTRÓNICO",
+			Numero:        strconv.Itoa(idVenta),
+			FechaEmision:  time.Now().Format("02/01/2006"),
+			TextoPie:      "Documento generado automáticamente. \nNo requiere firma ni timbre.",
+		}
+
+		venta, err := cu.SalesRepo.GetSale(idVenta)
+		if err != nil {
+			return fmt.Errorf("error obteniendo venta: %w", err)
+		}
+
+		detalles, err := cu.SalesRepo.GetSalesDetails(idVenta)
+		if err != nil {
+			return fmt.Errorf("error obteniendo detalles venta: %w", err)
+		}
+
+		var items []templates.Item
+		for _, det := range detalles {
+			items = append(items, templates.Item{
+				Descripcion: det.Producto.Nombre,
+				Cantidad:    det.Cantidad,
+				PrecioVenta: strconv.FormatFloat(det.PrecioVenta, 'f', -1, 64),
+				Total:       strconv.FormatFloat(det.PrecioVenta*float64(det.Cantidad), 'f', -1, 64),
+			})
+		}
+
+		subtotal := math.Round(venta.Total / 1.19)
+		iva := math.Round(venta.Total - subtotal)
+
+		resumen := &templates.Resumen{
+			Subtotal:      strconv.FormatFloat(subtotal, 'f', -1, 64),
+			PorcentajeIVA: 19,
+			MontoIVA:      strconv.FormatFloat(iva, 'f', -1, 64),
+			Total:         strconv.FormatFloat(venta.Total, 'f', -1, 64),
+		}
+
+		data := templates.BoletaData{
+			Empresa: empresa,
+			Cliente: cliente,
+			Boleta:  boleta,
+			Items:   items,
+			Resumen: resumen,
+		}
+
+		html, err := templates.InvoiceTemplateHTML(data)
+		if err != nil {
+			return fmt.Errorf("error generando HTML: %w", err)
+		}
+
+		pdfByte, err := utils.GeneratePDFFromHTMLString(html)
+		if err != nil {
+			return fmt.Errorf("error generando PDF: %w", err)
+		}
+
+		pdfBytes = append(pdfBytes, utils.Attachment{
+			FileName:    "boleta N°" + strconv.Itoa(idVenta) + ".pdf",
+			Buffer:      pdfByte,
+			ContentType: "application/pdf",
+		})
+	}
+
+	mail := &utils.Mail{
+		To:          req.To,
+		Subject:     req.Subject,
+		BodyHTML:    req.BodyHTML,
+		Attachments: pdfBytes,
+	}
+
+	if err := utils.SendMail(mail); err != nil {
+		return fmt.Errorf("error enviando correo: %w", err)
+	}
+
+	return nil
 }

@@ -25,8 +25,10 @@ func SetupPaymentRoutes(rg *gin.Engine) {
 	cartRepo := repository.NewCartRepository()
 	saleRepo := repository.NewSaleRepository()
 	customerRepo := repository.NewCustomerRepository()
+	salesRepo := repository.NewSaleRepository()
+	customerUseCase := usecase.NewCustomerUseCase(customerRepo, salesRepo, cartRepo)
 	directionRepo := repository.NewDirectionRepository()
-	payUsecase := usecase.NewPaymentUsecase(payRepo, cartRepo, saleRepo, customerRepo, directionRepo)
+	payUsecase := usecase.NewPaymentUsecase(customerUseCase, payRepo, cartRepo, saleRepo, customerRepo, directionRepo)
 	payController := controller.NewPaymentController(payUsecase)
 
 	rg.POST("/payments/checkout", payController.CreateCheckout)

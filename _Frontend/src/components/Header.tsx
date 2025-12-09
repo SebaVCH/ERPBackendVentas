@@ -92,11 +92,11 @@ export default function Header() {
                         </>
                         :
                         <>
-                            <button onClick={() => navigate('/register')} className="flex items-center gap-2 px-3 py-2 bg-cyan-400 text-black hover:bg-cyan-300 border border-cyan-500 rounded-md shadow font-semibold">
+                            <button onClick={() => navigate('/register')} className="cursor-pointer flex items-center gap-2 px-3 py-2 bg-cyan-400 text-black hover:bg-cyan-300 border border-cyan-500 rounded-md shadow font-semibold">
                                 <i className="pi pi-user-plus"></i>
                                 <span className="text-sm">Registrarse</span>
                             </button>
-                            <button onClick={() => navigate('/login')} className="flex items-center gap-2 px-3 py-2 bg-neutral-100 text-black hover:bg-neutral-300 border border-gray-100 rounded-md shadow font-semibold">
+                            <button onClick={() => navigate('/login')} className="cursor-pointer flex items-center gap-2 px-3 py-2 bg-neutral-100 text-black hover:bg-neutral-300 border border-gray-100 rounded-md shadow font-semibold">
                                 <i className="pi pi-user-plus"></i>
                                 <span className="text-sm">Iniciar Sesión</span>
                             </button>

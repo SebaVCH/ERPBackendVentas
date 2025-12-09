@@ -4,12 +4,15 @@ import { InputText } from 'primereact/inputtext'
 import { useCheckToken } from '../api/queries/useAuth'
 import 'primeicons/primeicons.css'
 import logo from '../assets/logo.png'
+import { useCart } from '../api/queries/useCart'
 
 export default function Header() {
     const navigate = useNavigate()
     const { search } = useLocation()
     const [term, setTerm] = useState('')
-    const { data: checkToken } = useCheckToken()
+    const { data: checkToken, isLoading } = useCheckToken()
+    const clientID = checkToken?.clientID as number
+    const { data: dataCarrito } = useCart(clientID)
     const isLoggedIn = !!checkToken?.clientID
 
     // Si venimos de /products con ?search=..., muestra el término en el input
@@ -69,25 +72,38 @@ export default function Header() {
                     </form>
 
                     <div className="flex items-center gap-3 flex-shrink-0">
-                        <button onClick={() => navigate('/mi-carrito')} className="relative flex items-center gap-2 px-3 py-2 bg-black/25 hover:bg-black/35 text-white border border-white/20 rounded-md shadow">
-                            <i className="pi pi-shopping-cart"></i>
-                            <span className="text-sm font-semibold">Carrito</span>
-                            <span className="absolute -top-2 -right-2 bg-cyan-400 text-black text-xs font-bold px-2 py-1 rounded-full border border-black/10">
-                                69
-                            </span>
-                        </button>
-                        {!isLoggedIn ? (
+                    {   isLoading ? 
+                        <>
+                        </>
+                        :
+                        isLoggedIn ? 
+                        <>
+                            <button onClick={() => navigate('/mi-carrito')} className="cursor-pointer relative flex items-center gap-2 px-3 py-2 bg-black/25 hover:bg-black/35 text-white border border-white/20 rounded-md shadow">
+                                <i className="pi pi-shopping-cart"></i>
+                                <span className="text-sm font-semibold">Carrito</span>
+                                <span className="absolute -top-2 -right-2 bg-cyan-400 text-black text-xs font-bold px-2 py-1 rounded-full border border-black/10">
+                                    {dataCarrito?.cartProducts.length}
+                                </span>
+                            </button>
+                            <button onClick={() => navigate('/mi-perfil')} className="cursor-pointer flex items-center gap-2 px-3 py-2 bg-white text-indigo-700 hover:bg-indigo-50 border border-white/60 rounded-md shadow">
+                                <i className="pi pi-user"></i>
+                                <span className="text-sm font-semibold">Mi cuenta</span>
+                            </button>
+                        </>
+                        :
+                        <>
                             <button onClick={() => navigate('/register')} className="flex items-center gap-2 px-3 py-2 bg-cyan-400 text-black hover:bg-cyan-300 border border-cyan-500 rounded-md shadow font-semibold">
                                 <i className="pi pi-user-plus"></i>
                                 <span className="text-sm">Registrarse</span>
                             </button>
-                        ) : (
-                            <button onClick={() => navigate('/mi-perfil')} className="flex items-center gap-2 px-3 py-2 bg-white text-indigo-700 hover:bg-indigo-50 border border-white/60 rounded-md shadow">
-                                <i className="pi pi-user"></i>
-                                <span className="text-sm font-semibold">Mi cuenta</span>
+                            <button onClick={() => navigate('/login')} className="flex items-center gap-2 px-3 py-2 bg-neutral-100 text-black hover:bg-neutral-300 border border-gray-100 rounded-md shadow font-semibold">
+                                <i className="pi pi-user-plus"></i>
+                                <span className="text-sm">Iniciar Sesión</span>
                             </button>
-                        )}
+                        </>
+                    }
                     </div>
+
                 </div>
             </div>
         </header>

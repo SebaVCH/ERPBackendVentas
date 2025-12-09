@@ -1,3 +1,4 @@
+import type { Product } from "./Product"
 
 export type Cart = {
     cartID: number
@@ -12,4 +13,5 @@ export type CartItem = {
     productID: number
     amount: number
     unitPrice: number
+    product: Product
 }

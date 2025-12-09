@@ -26,7 +26,7 @@ export function OrderItemsList({ items }: OrderItemsListProps) {
 function OrderItemCard({ item }: { item: OrderProduct }) {
     return (
         <div className="flex gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-            <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-20 h-20 bg-linear-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
                 <i className="pi pi-box text-gray-400 text-2xl"></i>
             </div>
 

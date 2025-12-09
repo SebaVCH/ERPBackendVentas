@@ -1,20 +1,25 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useProductDetails } from '../api/queries/useProductDetails'
 import type { ProductDetail } from '../types/ProductDetail'
 import { LoadingState } from '../components/LoadingState'
 import { ErrorState } from '../components/ErrorState'
+import { formatCLP } from '../utils/format'
+import { useCheckToken } from '../api/queries/useAuth'
+import { useAddItemToCart, useCart } from '../api/queries/useCart'
+import type { Product } from '../types/Product'
+import LoginRequiredDialog from './Home/components/LoginRequiredDialog'
 
-const formatCLP = (value: number) =>
-    new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value)
-
-function ProductDetailCard({ productDetail }: { productDetail: ProductDetail }) {
+function ProductDetailCard({ productDetail, handleAgregarProductoCarrito }: { productDetail: ProductDetail, handleAgregarProductoCarrito: () => void }) {
     const navigate = useNavigate()
     const agotado = productDetail.product.stock <= 0
+    
     
     const handleViewDetails = () => {
         navigate(`/details/${productDetail.product.productID}`)
     }
+
+    
 
     return (
         <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
@@ -49,6 +54,7 @@ function ProductDetailCard({ productDetail }: { productDetail: ProductDetail }) 
 
                 <div className="mt-4 flex gap-2">
                     <button
+                        onClick={() => {console.log("asads"); handleAgregarProductoCarrito()}}
                         className={`px-3 py-2 rounded-md text-sm font-medium flex-1 ${
                             agotado
                                 ? 'bg-gray-500/60 text-gray-300 cursor-not-allowed'
@@ -72,7 +78,17 @@ function ProductDetailCard({ productDetail }: { productDetail: ProductDetail }) 
 
 export default function Details() {
     const { search } = useLocation()
+    const navigate = useNavigate()
     const { data: productDetails = [], isLoading: loading, error } = useProductDetails()
+    const { data: checkToken } = useCheckToken()
+    const clientID = checkToken?.clientID as number
+    const { data: cart } = useCart(clientID)
+    const { mutate: mutateAddItemCart } = useAddItemToCart()
+    const [ showLoginRequired, setShowLoginRequired ] = useState(false) 
+    const productsInCarts = cart?.cartProducts
+    const isProductInCart = (productID: number) => {
+        return productsInCarts?.some((item) => item.productID === productID) || false
+    }
 
     const searchTerm = useMemo(() => {
         const params = new URLSearchParams(search)
@@ -98,6 +114,32 @@ export default function Details() {
             categorias: categorias.toString()
         }
     }, [productDetails])
+
+    const handleAgregarProductoCarrito = (product : Product) => {
+        console.log("AOSNDADSON")
+        if(!clientID) {
+            setShowLoginRequired(true)
+            return
+        }
+        if(isProductInCart(product.productID)) {
+            navigate('/mi-carrito')
+            return
+        }
+        mutateAddItemCart({
+            clientID: clientID,
+            productID: product.productID,
+            amount: 1,
+            unitPrice: product.unitPrice,
+            product: product
+        }, {
+            onSuccess: (data) => {
+                console.log("Se agrego correctamente:  ",data)
+            },
+            onError: (error) => {
+                console.log(error)
+            }
+        })
+    }
 
     if (loading) return <LoadingState message="Cargando productos con detalles..." />
     if (error) return <ErrorState title="Error al cargar productos" message={error instanceof Error ? error.message : 'Ocurrió un error inesperado'} />
@@ -154,11 +196,16 @@ export default function Details() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filtered.map((productDetail) => (
-                            <ProductDetailCard key={productDetail.extraDetailID} productDetail={productDetail} />
+                            <ProductDetailCard handleAgregarProductoCarrito={() => handleAgregarProductoCarrito(productDetail.product)} key={productDetail.extraDetailID} productDetail={productDetail} />
                         ))}
                     </div>
                 )}
             </div>
+            <LoginRequiredDialog 
+                visible={showLoginRequired} 
+                onHide={() => setShowLoginRequired(false)} 
+                onLogin={() => navigate('/login', { replace: true })}            
+            />
         </div>
     )
 }

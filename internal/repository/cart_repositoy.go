@@ -188,6 +188,7 @@ func (r *cartRepository) GetCartItems(userID int) (*domain.Carrito, []domain.Car
 	var cartProducts []domain.CarritoProducto
 	if err := r.db.
 		Where("id_cart = ?", cart.IDCart).
+		Preload("Producto").
 		Find(&cartProducts).Error; err != nil {
 		return &cart, nil, err
 	}

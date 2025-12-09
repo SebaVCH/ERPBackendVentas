@@ -17,6 +17,8 @@ export async function getOrderDetail(orderID: number): Promise<OrderDetail> {
         getOrder(orderID)
     ])
 
+    console.log(detailsRes)
+
     if (!Array.isArray(detailsRes.data.data)) return { order, orderItems: [] }
     
     return {

@@ -8,6 +8,7 @@ const RESOURCE_NAME = 'payments'
 
 export async function createCheckout(checkout : CreateCheckoutRequest) : Promise<CheckoutResponse> {
     const payload = adaptCheckoutRequest(checkout)
+    console.log(payload)
     const { data } = await axiosInstance.post(`/${RESOURCE_NAME}/checkout`, payload)
     return adaptCheckoutResponse(data?.data)
 }

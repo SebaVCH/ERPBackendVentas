@@ -6,6 +6,8 @@ import LoginRequiredDialog from './components/LoginRequiredDialog'
 import { pickRandom } from '../../utils/pickrandom'
 import { ProductCard } from './components/ProductCard'
 import { useCheckToken } from '../../api/queries/useAuth'
+import { useAddItemToCart, useCart } from '../../api/queries/useCart'
+import type { Product } from '../../types/Product'
 
 
 
@@ -18,7 +20,15 @@ export default function Home() {
     const clientID = checkToken?.clientID as number
     const { data: products = [], isLoading: loading, error } = useProducts()
     const { data: productDetails = [] } = useProductDetails()
+    const { data: cart } = useCart(clientID)
+    const { mutate: mutateAddItemCart } = useAddItemToCart()
     const [ showLoginRequired, setShowLoginRequired ] = useState(false) 
+
+    const productsInCarts = cart?.cartProducts
+
+    const isProductInCart = (productID: number) => {
+        return productsInCarts?.some((item) => item.productID === productID) || false
+    }
 
     // Combinar products con sus detalles (imagen y categoría)
     const productsWithDetails = useMemo(() => {
@@ -43,12 +53,39 @@ export default function Home() {
     }, [productsWithDetails])
 
 
-    const handleAgregarProductoCarrito = () => {
+    const handleAgregarProductoCarrito = (product : Product) => {
         if(!clientID) {
             setShowLoginRequired(true)
             return
         }
-        // Manejar Agregar Producto
+        if(isProductInCart(product.productID)) {
+            navigate('/mi-carrito')
+            return
+        }
+        console.log("AAAA")
+        mutateAddItemCart({
+            clientID: clientID,
+            productID: product.productID,
+            amount: 1,
+            unitPrice: product.unitPrice,
+            product: {
+                productID: 0,
+                name: '',
+                description: '',
+                unitPrice: 0,
+                state: false,
+                stock: 0,
+                imageUrl: undefined,
+                category: undefined
+            }
+        }, {
+            onSuccess: (data) => {
+                console.log("Se agrego correctamente:  ",data)
+            },
+            onError: (error) => {
+                console.log(error)
+            }
+        })
     }
 
 
@@ -137,7 +174,7 @@ export default function Home() {
                     {!loading && !error && featuredUnder100.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             {featuredUnder100.map((p) => (
-                                <ProductCard handleAgregar={handleAgregarProductoCarrito} key={p.productID} p={p} />
+                                <ProductCard isInCart={isProductInCart(p.productID)} handleAgregar={() => handleAgregarProductoCarrito(p)} key={p.productID} p={p} />
                             ))}
                         </div>
                     )}
@@ -164,7 +201,7 @@ export default function Home() {
                     {!loading && !error && featuredBetween100And200.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             {featuredBetween100And200.map((p) => (
-                                <ProductCard handleAgregar={handleAgregarProductoCarrito} key={p.productID} p={p} />
+                                <ProductCard isInCart={isProductInCart(p.productID)} handleAgregar={() => handleAgregarProductoCarrito(p)} key={p.productID} p={p} />
                             ))}
                         </div>
                     )}

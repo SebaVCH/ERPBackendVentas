@@ -1,10 +1,53 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useProducts } from '../../api/queries/useProducts'
 import { useProductDetails } from '../../api/queries/useProductDetails'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { formatCLP } from '../../utils/format'
+import { useCheckToken } from '../../api/queries/useAuth'
+import { useAddItemToCart, useCart } from '../../api/queries/useCart'
+import type { Product } from '../../types/Product'
+import LoginRequiredDialog from '../Home/components/LoginRequiredDialog'
 
 export default function ProductDetails() {
+    const navigate = useNavigate()
+    const { data: checkToken } = useCheckToken()
+    const clientID = checkToken?.clientID as number
+    const { data: cart } = useCart(clientID)
+    const { mutate: mutateAddItemCart } = useAddItemToCart()
+    const [ showLoginRequired, setShowLoginRequired ] = useState(false) 
+    const productsInCarts = cart?.cartProducts
+    const isProductInCart = (productID: number) => {
+        return productsInCarts?.some((item) => item.productID === productID) || false
+    }
+
+
+    const handleAgregarProductoCarrito = (product : Product) => {
+        console.log("AOSNDADSON")
+        if(!clientID) {
+            setShowLoginRequired(true)
+            return
+        }
+        if(isProductInCart(product.productID)) {
+            navigate('/mi-carrito')
+            return
+        }
+        mutateAddItemCart({
+            clientID: clientID,
+            productID: product.productID,
+            amount: 1,
+            unitPrice: product.unitPrice,
+            product: product
+        }, {
+            onSuccess: (data) => {
+                console.log("Se agrego correctamente:  ",data)
+            },
+            onError: (error) => {
+                console.log(error)
+            }
+        })
+    }
+
+
     const { id } = useParams<{ id: string }>()
     const { data: products = [], isLoading: loadingProducts } = useProducts()
     const { data: productDetails = [], isLoading: loadingDetails } = useProductDetails()
@@ -133,6 +176,7 @@ export default function ProductDetails() {
                             </div>
 
                             <button
+                                onClick={() => handleAgregarProductoCarrito(product)}
                                 className={`w-full py-3 rounded-lg text-lg font-semibold transition ${
                                     agotado
                                         ? 'bg-gray-500/60 text-gray-300 cursor-not-allowed'
@@ -164,6 +208,11 @@ export default function ProductDetails() {
                     </div>
                 </div>
             </div>
+            <LoginRequiredDialog 
+                visible={showLoginRequired} 
+                onHide={() => setShowLoginRequired(false)} 
+                onLogin={() => navigate('/login', { replace: true })}            
+            />
         </div>
     )
 }

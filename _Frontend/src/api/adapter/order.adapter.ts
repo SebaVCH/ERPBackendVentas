@@ -52,13 +52,13 @@ export type OrderDetailResponse = {
     id_producto: number
     producto: ProductResponse
     cantidad: number
-    precio_unit: number
+    precio_venta: number
 }
 
 export function adapterOrderDetailResponse(res: OrderDetailResponse): OrderProduct {
     return {
         product: adapterProductResponse(res.producto), 
         amount: res.cantidad,
-        unitPrice: res.precio_unit
+        unitPrice: res.precio_venta
     }
 }

@@ -15,9 +15,14 @@ export function ProductCard({ p, handleAgregar, isInCart = false }: ProductCardP
         <div className="bg-linear-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition">
             <div className="relative h-44 w-full">
                 <img
-                    src={p.imageUrl || '/1.png'}
+                    src={p.imageUrl || '/venta_hardware.jpg'}
                     alt={p.name}
                     className="object-cover w-full h-full"
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.onerror = null
+                        target.src = '/venta_hardware.jpg'
+                    }}
                 />
                 <span
                     className={`absolute top-3 left-3 text-xs text-white px-2 py-1 rounded-full ${
@@ -39,18 +44,19 @@ export function ProductCard({ p, handleAgregar, isInCart = false }: ProductCardP
                 <p className="text-indigo-200 text-xs mt-1 line-clamp-2">{p.description}</p>
                 <div className="mt-4 flex gap-2">
                     <button
-                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                             agotado
                                 ? 'bg-gray-500/60 text-gray-300 cursor-not-allowed'
                                 : isInCart
-                                ? 'bg-white/10 text-green-300 border border-green-500/30 hover:bg-white/15'
-                                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                                ? 'bg-white/10 text-green-300 border border-green-500/30 hover:bg-white/15 cursor-pointer'
+                                : 'bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer'
                         }`}
                         disabled={agotado}
                         onClick={handleAgregar}
                     >
                         {isInCart ? 'Ver Carrito' : 'Agregar'}
                     </button>
+                    
                     <Link to={`/products/${p.productID}`} className="px-3 py-2 border border-white/10 text-indigo-200 rounded-md text-sm hover:bg-white/5">
                         Ver
                     </Link>

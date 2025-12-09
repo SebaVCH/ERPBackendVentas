@@ -114,20 +114,14 @@ export default function Home() {
 
                         <div className="mt-6 flex gap-4">
                             <Link to="/products">
-                                <button className="px-6 py-3 bg-linear-to-r from-indigo-500 to-cyan-400 rounded-full text-black font-semibold shadow-lg">
+                                <button className="px-6 py-3 bg-linear-to-r from-indigo-500 to-cyan-400 rounded-full text-black font-semibold shadow-lg cursor-pointer hover:scale-105 transform transition">
                                     Ver Colección
                                 </button>
                             </Link>
                         </div>
 
                         <div className="mt-8 grid grid-cols-3 gap-3">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center">⚡</div>
-                                <div className="text-sm">
-                                    <div className="font-semibold">Envío rápido</div>
-                                    <div className="text-indigo-300 text-xs">24-48 horas</div>
-                                </div>
-                            </div>
+
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center">🔒</div>
                                 <div className="text-sm">
@@ -135,13 +129,7 @@ export default function Home() {
                                     <div className="text-indigo-300 text-xs">Protección total</div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center">✨</div>
-                                <div className="text-sm">
-                                    <div className="font-semibold">Garantía</div>
-                                    <div className="text-indigo-300 text-xs">12 meses</div>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
 

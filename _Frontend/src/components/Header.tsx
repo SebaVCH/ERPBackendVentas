@@ -64,7 +64,7 @@ export default function Header() {
                             />
                             <button
                                 type="submit"
-                                className="px-4 bg-black/30 hover:bg-black/40 text-white font-semibold text-sm border border-white/30"
+                                className="cursor-pointer px-4 bg-black/30 hover:bg-black/40 text-white font-semibold text-sm border border-white/30"
                             >
                                 Buscar
                             </button>

@@ -14,7 +14,8 @@ export default function ProductDetails() {
     const clientID = checkToken?.clientID as number
     const { data: cart } = useCart(clientID)
     const { mutate: mutateAddItemCart } = useAddItemToCart()
-    const [ showLoginRequired, setShowLoginRequired ] = useState(false) 
+    const [ showLoginRequired, setShowLoginRequired ] = useState(false)
+    const [ quantity, setQuantity ] = useState(1)
     const productsInCarts = cart?.cartProducts
     const isProductInCart = (productID: number) => {
         return productsInCarts?.some((item) => item.productID === productID) || false
@@ -22,7 +23,6 @@ export default function ProductDetails() {
 
 
     const handleAgregarProductoCarrito = (product : Product) => {
-        console.log("AOSNDADSON")
         if(!clientID) {
             setShowLoginRequired(true)
             return
@@ -34,7 +34,7 @@ export default function ProductDetails() {
         mutateAddItemCart({
             clientID: clientID,
             productID: product.productID,
-            amount: 1,
+            amount: quantity,
             unitPrice: product.unitPrice,
             product: product
         }, {
@@ -104,9 +104,14 @@ export default function ProductDetails() {
                     <div className="flex flex-col gap-6">
                         <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
                             <img
-                                src={product.imageUrl || '/1.png'}
+                                src={product.imageUrl || '/venta_hardware.jpg'}
                                 alt={product.name}
                                 className="w-full h-96 object-cover"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement
+                                    target.onerror = null
+                                    target.src = '/venta_hardware.jpg'
+                                }}
                             />
                         </div>
 
@@ -175,16 +180,41 @@ export default function ProductDetails() {
                                 <span className="text-sm text-indigo-300">IVA incluido</span>
                             </div>
 
+                            {!agotado && !isProductInCart(product.productID) && (
+                                <div className="flex items-center gap-4 mb-4">
+                                    <span className="text-white font-medium">Cantidad:</span>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                            className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded border border-white/20 font-bold"
+                                        >
+                                            -
+                                        </button>
+                                        <span className="px-4 py-1 bg-white/5 text-white rounded border border-white/20 min-w-[3rem] text-center font-semibold">
+                                            {quantity}
+                                        </span>
+                                        <button
+                                            onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                                            className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded border border-white/20 font-bold"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             <button
                                 onClick={() => handleAgregarProductoCarrito(product)}
-                                className={`w-full py-3 rounded-lg text-lg font-semibold transition ${
+                                className={`w-full py-3 rounded-lg text-lg font-semibold transition cursor-pointer ${
                                     agotado
                                         ? 'bg-gray-500/60 text-gray-300 cursor-not-allowed'
-                                        : 'bg-gradient-to-r from-indigo-500 to-cyan-400 text-black hover:scale-105'
+                                        : isProductInCart(product.productID)
+                                        ? 'bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer'
+                                        : 'bg-gradient-to-r from-indigo-500 to-cyan-400 text-black hover:scale-105 cursor-pointer'
                                 }`}
                                 disabled={agotado}
                             >
-                                {agotado ? 'Producto agotado' : 'Agregar al carrito'}
+                                {agotado ? 'Producto agotado' : isProductInCart(product.productID) ? 'Ver en carrito' : 'Agregar al carrito'}
                             </button>
                         </div>
 

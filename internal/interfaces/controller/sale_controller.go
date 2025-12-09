@@ -30,3 +30,7 @@ func (sc *SaleController) GetSale(c *gin.Context) {
 func (sc *SaleController) GetSalesDetails(c *gin.Context) {
 	sc.SaleUseCase.GetSalesDetails(c)
 }
+
+func (sc *SaleController) GetSalesByClientID(c *gin.Context) {
+	sc.SaleUseCase.GetSalesByClientID(c)
+}

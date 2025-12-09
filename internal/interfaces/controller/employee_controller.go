@@ -22,3 +22,11 @@ func (ec *EmployeeController) LoginEmployee(ctx *gin.Context) {
 func (ec *EmployeeController) RegisterEmployee(ctx *gin.Context) {
 	ec.EmployeeUsecase.RegisterEmployee(ctx)
 }
+
+func (ec *EmployeeController) GetEmployeeByRut(ctx *gin.Context) {
+	ec.EmployeeUsecase.GetEmployeeByRut(ctx)
+}
+
+func (ec *EmployeeController) GetEmployeeByEmail(ctx *gin.Context) {
+	ec.EmployeeUsecase.GetEmployeeByEmail(ctx)
+}

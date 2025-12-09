@@ -14,6 +14,8 @@ import (
 type EmployeeUsecase interface {
 	LoginEmployee(ctx *gin.Context) error
 	RegisterEmployee(ctx *gin.Context) error
+	GetEmployeeByRut(ctx *gin.Context) error
+	GetEmployeeByEmail(ctx *gin.Context) error
 }
 
 type employeeUsecase struct {
@@ -222,6 +224,86 @@ func (u *employeeUsecase) RegisterEmployee(ctx *gin.Context) error {
 			"rol":             employee.Rol,
 			"id_departamento": employee.IDDepartamento,
 			"rut":             employee.Rut,
+		},
+	})
+	return nil
+}
+
+func (u *employeeUsecase) GetEmployeeByRut(ctx *gin.Context) error {
+	rut := ctx.Param("rut")
+	if rut == "" {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "RUT requerido",
+			Error:   "debe proporcionar un RUT",
+		})
+		return nil
+	}
+
+	employee, err := u.employeeRepo.GetByRut(rut)
+	if err != nil {
+		respondJSON(ctx, http.StatusNotFound, APIResponse{
+			Success: false,
+			Message: "empleado no encontrado",
+			Error:   err.Error(),
+		})
+		return nil
+	}
+
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "empleado obtenido exitosamente",
+		Data: gin.H{
+			"id_empleado":     employee.IDEmpleado,
+			"nombre":          employee.Nombre,
+			"apellido":        employee.Apellido,
+			"email":           employee.Email,
+			"rol":             employee.Rol,
+			"estado":          employee.Estado,
+			"telefono":        employee.Telefono,
+			"rut":             employee.Rut,
+			"id_departamento": employee.IDDepartamento,
+			"fecha_ingreso":   employee.FechaIngreso,
+		},
+	})
+	return nil
+}
+
+func (u *employeeUsecase) GetEmployeeByEmail(ctx *gin.Context) error {
+	email := ctx.Param("email")
+	if email == "" {
+		respondJSON(ctx, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "email requerido",
+			Error:   "debe proporcionar un email",
+		})
+		return nil
+	}
+
+	employee, err := u.employeeRepo.GetByEmail(email)
+	if err != nil {
+		respondJSON(ctx, http.StatusNotFound, APIResponse{
+			Success: false,
+			Message: "empleado no encontrado",
+			Error:   err.Error(),
+		})
+		return nil
+	}
+
+	respondJSON(ctx, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "empleado obtenido exitosamente",
+		Data: gin.H{
+			"id_empleado":     employee.IDEmpleado,
+			"nombre":          employee.Nombre,
+			"apellido":        employee.Apellido,
+			"email":           employee.Email,
+			"rol":             employee.Rol,
+			"estado":          employee.Estado,
+			"telefono":        employee.Telefono,
+			"rut":             employee.Rut,
+			"id_departamento": employee.IDDepartamento,
+			"fecha_ingreso":   employee.FechaIngreso,
 		},
 	})
 	return nil

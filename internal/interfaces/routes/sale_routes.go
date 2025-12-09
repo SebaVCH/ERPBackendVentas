@@ -13,9 +13,10 @@ func SetupSaleRoutes(rg *gin.Engine) {
 	saleUseCase := usecase.NewSaleUseCase(saleRepo, cartRepo)
 	saleController := controller.NewSaleController(saleUseCase)
 
-	rg.POST("/sales", saleController.CreateSale) // POST /api/sales
-	rg.GET("/sales", saleController.GetSales)    // GET  /api/sales
-	rg.GET("/sales/:id", saleController.GetSale) // GET  /api/sales/:id
-	rg.GET("/sales/:id/details", saleController.GetSalesDetails)
+	rg.POST("/sales", saleController.CreateSale)                   // POST /api/sales
+	rg.GET("/sales", saleController.GetSales)                      // GET  /api/sales
+	rg.GET("/sales/:id", saleController.GetSale)                   // GET  /api/sales/:id
+	rg.GET("/sales/:id/details", saleController.GetSalesDetails)   // GET  /api/sales/:id/details
+	rg.GET("/sales/client/:id", saleController.GetSalesByClientID) // GET  /api/sales/client/:id
 
 }

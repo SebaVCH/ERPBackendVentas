@@ -199,10 +199,18 @@ export default function Home() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div>
                             <h4 className="text-xl font-bold">¿Armas tu PC?</h4>
-                            <p className="text-indigo-300">Encuentra combos, kits y asesoría para montajes con estilo y potencia.</p>
+                            <p className="text-indigo-300">Encuentra combos, kits y asesoría para montajes con estilo y potencia. Contactanos vía whatsapp.</p>
                         </div>
                         <div>
-                            <p className="px-5 py-3 bg-cyan-400 text-black rounded-lg font-semibold">Llámanos al +56988300793</p>
+                            <a 
+                                href="https://wa.me/56988300793" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-5 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold cursor-pointer transition"
+                            >
+                                <span className="text-2xl">📞</span>
+                                <span>+56 9 8830 0793</span>
+                            </a>
                         </div>
                     </div>
                 </section>

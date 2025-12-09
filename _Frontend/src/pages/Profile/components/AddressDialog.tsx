@@ -52,7 +52,7 @@ export default function AddressPutDialog({ title, isOpen, onClose, address, upda
                 <div className="flex flex-col gap-2">
                         <label className="font-semibold text-gray-700">Comuna</label>
                         <InputText
-                            value={address.number}
+                            value={address.commune}
                             onChange={(e) => updateField("commune", e.target.value)}
                             placeholder="Florida"
                         />

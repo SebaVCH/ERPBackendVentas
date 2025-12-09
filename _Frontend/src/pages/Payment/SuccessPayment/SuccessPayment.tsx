@@ -27,11 +27,11 @@ export default function SuccessPayment() {
         if (!orderDetail) 
             return { subtotal: 0, iva: 0, total: 0 }
 
-        const subtotalCalc = Math.round(orderDetail.orderItems.reduce((sum, item) => sum + item.unitPrice * item.amount, 0))
+        const totalCacl = Math.round(orderDetail.orderItems.reduce((sum, item) => sum + item.unitPrice * item.amount, 0))
         return {
-            subtotal: subtotalCalc,
-            iva: Math.round(subtotalCalc * 0.19),
-            total: Math.round(subtotalCalc * 1.19)
+            subtotal: (totalCacl*(1 - 0.19)),
+            iva: Math.round(totalCacl * 0.19),
+            total: Math.round(totalCacl)
         }
     }, [orderDetail])
 

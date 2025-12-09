@@ -15,6 +15,7 @@ type SaleUsecase interface {
 	GetSales(c *gin.Context)
 	GetSale(c *gin.Context)
 	GetSalesDetails(c *gin.Context)
+	GetSalesByClientID(c *gin.Context)
 }
 
 type saleUsecase struct {
@@ -193,5 +194,34 @@ func (u *saleUsecase) GetSalesDetails(c *gin.Context) {
 		Success: true,
 		Message: "OK",
 		Data:    detallesVenta,
+	})
+}
+
+func (u *saleUsecase) GetSalesByClientID(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		respondJSON(c, http.StatusBadRequest, APIResponse{
+			Success: false,
+			Message: "id_cliente inválido",
+			Error:   "id debe ser numérico",
+		})
+		return
+	}
+
+	sales, err := u.SaleRepo.GetSalesByClientID(id)
+	if err != nil {
+		respondJSON(c, http.StatusInternalServerError, APIResponse{
+			Success: false,
+			Message: "error al obtener ventas del cliente",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	respondJSON(c, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "ventas obtenidas exitosamente",
+		Data:    sales,
 	})
 }

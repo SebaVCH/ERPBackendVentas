@@ -5,6 +5,7 @@ import { useCheckToken } from '../api/queries/useAuth'
 import 'primeicons/primeicons.css'
 import logo from '../assets/logo.png'
 import { useCart } from '../api/queries/useCart'
+import useSessionStore from '../stores/useSessionStore'
 
 export default function Header() {
     const navigate = useNavigate()
@@ -14,6 +15,7 @@ export default function Header() {
     const clientID = checkToken?.clientID as number
     const { data: dataCarrito } = useCart(clientID)
     const isLoggedIn = !!checkToken?.clientID
+    const { clearSession } = useSessionStore()
 
     // Si venimos de /products con ?search=..., muestra el término en el input
     useEffect(() => {
@@ -88,6 +90,14 @@ export default function Header() {
                             <button onClick={() => navigate('/mi-perfil')} className="cursor-pointer flex items-center gap-2 px-3 py-2 bg-white text-indigo-700 hover:bg-indigo-50 border border-white/60 rounded-md shadow">
                                 <i className="pi pi-user"></i>
                                 <span className="text-sm font-semibold">Mi cuenta</span>
+                            </button>
+                            <button onClick={() => {
+                                clearSession()
+                                localStorage.removeItem('token')
+                                navigate('/')
+                            }} className="cursor-pointer flex items-center gap-2 px-3 py-2 bg-red-500 text-white hover:bg-red-600 border border-red-600 rounded-md shadow font-semibold">
+                                <i className="pi pi-sign-out"></i>
+                                <span className="text-sm">Cerrar sesión</span>
                             </button>
                         </>
                         :
